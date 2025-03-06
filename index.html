@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <!-- Fix the TWK helper path -->
+    <script src="./twkhelper.js"></script>
     <link
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet"
@@ -13,14 +14,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data:;"> -->
     <title>الملف الصحي الموحد - توكلنا</title>
-    <style>
-      body {
-        font-family: 'Tajawal', sans-serif;
-        direction: rtl;
-      }
-    </style>
-    <script type="module" crossorigin src="/moh_twk_health_profile_react/assets/index-Rdw2bZoX.js"></script>
-    <link rel="stylesheet" crossorigin href="/moh_twk_health_profile_react/assets/index-C7osdWOW.css">
+   
+    <script type="module" crossorigin src="/moh_twk_health_profile_react/assets/index-jAWbMbLp.js"></script>
+    <link rel="stylesheet" crossorigin href="/moh_twk_health_profile_react/assets/index-DrC1ujtG.css">
   </head>
   <body>
     <div id="root"></div>
@@ -39,9 +35,6 @@
         deleteDocument: (reference, category) => Promise.resolve({ success: true }),
         version: "1.8"
       };
-
-      // Define TWK API base endpoint for testing
-      window.TWKAPIBASE = "https://api.tawakkalna.app";
     </script>
     
     <!-- Check which entry point your setup is using -->
