@@ -86,7 +86,7 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
   const medications = isCurrentType ? currentMedications : previousMedications;
   
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
       <div className="flex items-center mb-6">
         <button
           onClick={() => navigate(-1)}
@@ -95,23 +95,26 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
           <ArrowRight size={20} />
         </button>
         <h2 className="text-xl font-bold mr-2">
-          {isCurrentType ? 'الأدوية الحالية' : 'الأدوية السابقة'}
+          {isCurrentType ? "الأدوية الحالية" : "الأدوية السابقة"}
         </h2>
       </div>
-      
+
       {medications.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 rounded-lg">
+        <div className="text-center py-10 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <Pill size={40} className="mx-auto text-gray-300 mb-3" />
           <p className="text-gray-500">
-            {isCurrentType 
-              ? 'لا توجد أدوية حالية مسجلة' 
-              : 'لا توجد أدوية سابقة مسجلة'}
+            {isCurrentType
+              ? "لا توجد أدوية حالية مسجلة"
+              : "لا توجد أدوية سابقة مسجلة"}
           </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {medications.map(med => (
-            <div key={med.id} className="bg-white border border-gray-200 rounded-lg p-4">
+          {medications.map((med) => (
+            <div
+              key={med.id}
+              className="bg-white border border-gray-200 rounded-lg p-4"
+            >
               <div className="flex justify-between items-start">
                 <h3 className="font-medium">{med.name}</h3>
                 {isCurrentType && (
@@ -121,7 +124,7 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
                   </span>
                 )}
               </div>
-              
+
               <div className="grid grid-cols-2 gap-2 mt-3">
                 <div>
                   <span className="text-xs text-gray-500">الجرعة:</span>
@@ -136,21 +139,30 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
                   <p className="text-sm">{formatDate(med.startDate)}</p>
                 </div>
                 <div>
-                  <span className="text-xs text-gray-500">{isCurrentType ? 'المدة:' : 'تاريخ الانتهاء:'}</span>
-                  <p className="text-sm">{'duration' in med ? med.duration : formatDate(med.endDate)}</p>
+                  <span className="text-xs text-gray-500">
+                    {isCurrentType ? "المدة:" : "تاريخ الانتهاء:"}
+                  </span>
+                  <p className="text-sm">
+                    {"duration" in med ? med.duration : formatDate(med.endDate)}
+                  </p>
                 </div>
               </div>
-              
+
               <div className="mt-3">
                 <span className="text-xs text-gray-500">الطبيب:</span>
                 <p className="text-sm">{med.doctor}</p>
               </div>
-              
+
               {med.notes && (
                 <div className="mt-3 bg-yellow-50 p-2 rounded-md text-sm flex items-start">
-                  <AlertTriangle size={16} className="text-yellow-500 ml-2 mt-0.5" />
+                  <AlertTriangle
+                    size={16}
+                    className="text-yellow-500 ml-2 mt-0.5"
+                  />
                   <div>
-                    <span className="text-xs font-medium text-yellow-700">ملاحظات:</span>
+                    <span className="text-xs font-medium text-yellow-700">
+                      ملاحظات:
+                    </span>
                     <p className="text-yellow-700">{med.notes}</p>
                   </div>
                 </div>

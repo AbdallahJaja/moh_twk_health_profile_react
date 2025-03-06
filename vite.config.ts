@@ -5,8 +5,8 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // base: './', // Important for relative paths in WebView
-  base: "/moh_twk_health_profile_react/", // Set repo name as base path
+  base: './', // Important for relative paths in WebView
+  // base: "/moh_twk_health_profile_react/", // Set repo name as base path
   build: {
     outDir: 'dist', // Output directory
     assetsDir: 'assets', // Ensures organized assets

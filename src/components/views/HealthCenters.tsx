@@ -100,7 +100,7 @@ const HealthCenters: React.FC = () => {
   };
   
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
       <div className="flex items-center mb-6">
         <button
           onClick={() => navigate(-1)}
@@ -110,9 +110,9 @@ const HealthCenters: React.FC = () => {
         </button>
         <h2 className="text-xl font-bold mr-2">المركز الصحي المخصص</h2>
       </div>
-      
+
       {loading ? (
-        <div className="bg-gray-50 rounded-lg p-6 mb-6 flex justify-center items-center min-h-[200px]">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-6 flex justify-center items-center min-h-[200px]">
           <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
         </div>
       ) : (
@@ -128,7 +128,7 @@ const HealthCenters: React.FC = () => {
               {healthCenter.name}
             </div>
           </div>
-          
+
           {/* Health center details */}
           <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
             <div className="flex justify-between items-start">
@@ -137,9 +137,9 @@ const HealthCenters: React.FC = () => {
                 {healthCenter.distance} كم
               </span>
             </div>
-            
+
             <p className="text-gray-600 mt-2">{healthCenter.address}</p>
-            
+
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div>
                 <span className="text-xs text-gray-500">ساعات العمل:</span>
@@ -150,27 +150,32 @@ const HealthCenters: React.FC = () => {
                 <p className="text-sm">{healthCenter.phone}</p>
               </div>
             </div>
-            
+
             <div className="mt-4">
-              <span className="text-xs text-gray-500 block mb-1">الخدمات المتوفرة:</span>
+              <span className="text-xs text-gray-500 block mb-1">
+                الخدمات المتوفرة:
+              </span>
               <div className="flex flex-wrap gap-1">
                 {healthCenter.services.map((service, idx) => (
-                  <span key={idx} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                  <span
+                    key={idx}
+                    className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded"
+                  >
                     {service}
                   </span>
                 ))}
               </div>
             </div>
-            
+
             <div className="mt-4 grid grid-cols-2 gap-3">
-              <button 
+              <button
                 onClick={handleOpenDirections}
                 className="flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded-md"
               >
                 <Navigation size={16} className="ml-1" />
                 الاتجاهات
               </button>
-              <button 
+              <button
                 onClick={handleCall}
                 className="flex items-center justify-center bg-gray-100 text-gray-800 py-2 px-4 rounded-md"
               >
@@ -179,7 +184,7 @@ const HealthCenters: React.FC = () => {
               </button>
             </div>
           </div>
-          
+
           <div className="text-center text-sm text-gray-500">
             هذا هو المركز الصحي المخصص لك بناءً على عنوانك المسجل
           </div>

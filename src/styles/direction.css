@@ -1,0 +1,63 @@
+/* src/styles/direction.css - Create this file and import it in App.tsx */
+
+/* Force RTL specific styles */
+[dir="rtl"] {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+[dir="rtl"] .ml-2 {
+    margin-left: 0 !important;
+    margin-right: 0.5rem !important;
+}
+
+[dir="rtl"] .mr-2 {
+    margin-right: 0 !important;
+    margin-left: 0.5rem !important;
+}
+
+[dir="rtl"] .ml-3 {
+    margin-left: 0 !important;
+    margin-right: 0.75rem !important;
+}
+
+[dir="rtl"] .mr-3 {
+    margin-right: 0 !important;
+    margin-left: 0.75rem !important;
+}
+
+[dir="rtl"] .ml-4 {
+    margin-left: 0 !important;
+    margin-right: 1rem !important;
+}
+
+[dir="rtl"] .mr-4 {
+    margin-right: 0 !important;
+    margin-left: 1rem !important;
+}
+
+[dir="rtl"] .ml-5 {
+    margin-left: 0 !important;
+    margin-right: 1.25rem !important;
+}
+
+[dir="rtl"] .mr-5 {
+    margin-right: 0 !important;
+    margin-left: 1.25rem !important;
+}
+
+/* LTR overrides */
+[dir="ltr"] {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+/* Force dark mode styles */
+.dark {
+    color-scheme: dark !important;
+}
+
+.dark body {
+    background-color: #1a202c !important;
+    color: #e2e8f0 !important;
+}

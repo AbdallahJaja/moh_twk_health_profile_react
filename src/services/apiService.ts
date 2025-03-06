@@ -232,3 +232,37 @@ export const apiService = {
     );
   }
 };
+
+
+export const processVitalsData = (vitalsData: any) => {
+  const processedData: any = {};
+  
+  // Process each vital type
+  Object.keys(vitalsData).forEach(key => {
+    const data = vitalsData[key];
+    
+    if (!data || (!data.value && (!data.history || data.history.length === 0))) {
+      processedData[key] = { value: null, history: [] };
+      return;
+    }
+    
+    // Ensure history is an array
+    const history = Array.isArray(data.history) ? data.history : [];
+    
+    // Sort history by date (newest first)
+    const sortedHistory = [...history].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    
+    // Set value from history if not available
+    const value = data.value !== undefined ? data.value : 
+                 (sortedHistory.length > 0 ? sortedHistory[0].value : null);
+    
+    processedData[key] = {
+      value,
+      history: sortedHistory
+    };
+  });
+  
+  return processedData;
+};

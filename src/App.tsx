@@ -11,6 +11,7 @@ import Header from './components/layout/Header';
 
 import Medications from './components/views/Medications';
 import HealthCenters from './components/views/HealthCenters';
+import './styles/direction.css';
 
 // Context providers
 import { HealthDataProvider } from './context/HealthDataContext';
@@ -25,36 +26,81 @@ const App: React.FC = () => {
     <LanguageProvider>
       <ThemeProvider>
         <HealthDataProvider>
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans transition-colors duration-200">
+          <div className="min-h-screen bg-[#f9fafb] dark:bg-[#1f2937] font-sans transition-colors duration-200">
             <Header />
-            
+
             <main className="max-w-7xl mx-auto px-4 py-6">
               <Routes>
                 <Route path="/" element={<Dashboard />} />
-                
+
                 {/* Allergies Routes */}
-                <Route path="/allergies/medicine" element={<AllergiesForm type="medicine" />} />
-                <Route path="/allergies/food" element={<AllergiesForm type="food" />} />
-                <Route path="/allergies/material" element={<AllergiesForm type="material" />} />
-                <Route path="/allergies/doctor" element={<AllergiesForm type="doctor" />} />
-                
+                <Route
+                  path="/allergies/medicine"
+                  element={<AllergiesForm type="medicine" />}
+                />
+                <Route
+                  path="/allergies/food"
+                  element={<AllergiesForm type="food" />}
+                />
+                <Route
+                  path="/allergies/material"
+                  element={<AllergiesForm type="material" />}
+                />
+                <Route
+                  path="/allergies/doctor"
+                  element={<AllergiesForm type="doctor" />}
+                />
+
                 {/* Vitals Routes */}
                 <Route path="/vitals/bmi" element={<VitalsForm type="bmi" />} />
-                <Route path="/vitals/blood-pressure" element={<VitalsForm type="blood-pressure" />} />
-                <Route path="/vitals/blood-glucose" element={<VitalsForm type="blood-glucose" />} />
-                <Route path="/vitals/waist" element={<VitalsForm type="waist" />} />
-                <Route path="/vitals/weight" element={<VitalsForm type="weight" />} />
-                <Route path="/vitals/height" element={<VitalsForm type="height" />} />
-                
+                <Route
+                  path="/vitals/blood-pressure"
+                  element={<VitalsForm type="blood-pressure" />}
+                />
+                <Route
+                  path="/vitals/blood-glucose"
+                  element={<VitalsForm type="blood-glucose" />}
+                />
+                <Route
+                  path="/vitals/waist"
+                  element={<VitalsForm type="waist" />}
+                />
+                <Route
+                  path="/vitals/weight"
+                  element={<VitalsForm type="weight" />}
+                />
+                <Route
+                  path="/vitals/height"
+                  element={<VitalsForm type="height" />}
+                />
+
                 {/* General Health Routes */}
-                <Route path="/general/blood-type" element={<GeneralHealthForm type="blood-type" />} />
-                <Route path="/general/health-conditions" element={<GeneralHealthForm type="health-conditions" />} />
-                <Route path="/general/family-history" element={<GeneralHealthForm type="family-history" />} />
-                <Route path="/general/health-centers" element={<HealthCenters />} />
-                
+                <Route
+                  path="/general/blood-type"
+                  element={<GeneralHealthForm type="blood-type" />}
+                />
+                <Route
+                  path="/general/health-conditions"
+                  element={<GeneralHealthForm type="health-conditions" />}
+                />
+                <Route
+                  path="/general/family-history"
+                  element={<GeneralHealthForm type="family-history" />}
+                />
+                <Route
+                  path="/general/health-centers"
+                  element={<HealthCenters />}
+                />
+
                 {/* Medication Routes */}
-                <Route path="/medications/current" element={<Medications type="current" />} />
-                <Route path="/medications/previous" element={<Medications type="previous" />} />
+                <Route
+                  path="/medications/current"
+                  element={<Medications type="current" />}
+                />
+                <Route
+                  path="/medications/previous"
+                  element={<Medications type="previous" />}
+                />
               </Routes>
             </main>
           </div>

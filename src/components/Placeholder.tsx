@@ -48,7 +48,7 @@ const Placeholder: React.FC<PlaceholderProps> = ({ title }) => {
         <h2 className="text-xl font-bold mr-2">{getTitle()}</h2>
       </div>
 
-      <div className="text-center py-10 bg-gray-50 rounded-lg">
+      <div className="text-center py-10 bg-gray-50 dark:bg-gray-800rounded-lg">
         <p className="text-gray-500 mb-2">هذه الصفحة قيد التطوير</p>
         <p className="text-gray-400 text-sm">
           قسم: {params.category}

@@ -1,243 +1,249 @@
 // src/context/HealthDataContext.tsx
-import React, {
-  createContext,
-  useState,
-  useEffect,
-  useContext,
-  ReactNode,
-} from "react";
+import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { updateHealthData } from '../services/healthService';
+import { apiService } from '../services/apiService';
+// import { useLocalStorage } from '../hooks/useLocalStorage';
 
-// Define types for our data structure
-interface Allergy {
-  id: number;
-  name: string;
-  severity: string;
-  date: string;
-}
-
-interface VitalHistory {
-  date: string;
-  value: number | { systolic: number; diastolic: number };
-}
-
-interface Vital {
-  value: number | { systolic: number; diastolic: number } | null;
-  history: VitalHistory[];
-}
-
-interface HealthCondition {
-  id: number;
-  name: string;
-  date: string;
-}
-
-interface FamilyHistoryItem {
-  id: number;
-  name: string;
-  relation: string;
-  date: string;
-}
-
-// Main health data structure
-export interface HealthData {
+// Health data type definitions
+interface HealthData {
   allergies: {
-    medicine: Allergy[];
-    food: Allergy[];
-    material: Allergy[];
-    doctor: Allergy[];
+    medicine: any[];
+    food: any[];
+    material: any[];
+    doctor: any[];
   };
   vitals: {
-    bmi: Vital;
-    bloodPressure: Vital;
-    bloodGlucose: Vital;
-    waist: Vital;
-    weight: Vital;
-    height: Vital;
+    bmi: { value: number | null; history: any[] };
+    bloodPressure: { value: any | null; history: any[] };
+    bloodGlucose: { value: number | null; history: any[] };
+    waist: { value: number | null; history: any[] };
+    weight: { value: number | null; history: any[] };
+    height: { value: number | null; history: any[] };
   };
   general: {
     bloodType: string | null;
-    healthConditions: HealthCondition[];
-    familyHistory: FamilyHistoryItem[];
+    healthConditions: any[];
+    familyHistory: any[];
   };
   lastUpdated: Record<string, string>;
 }
 
-// Context type definition
 interface HealthDataContextType {
   healthData: HealthData;
   updateData: (category: string, type: string, value: any) => Promise<boolean>;
+  refreshData: () => Promise<void>;
   isLoading: boolean;
   error: string | null;
 }
 
-// Create context
-const HealthDataContext = createContext<HealthDataContextType | undefined>(
-  undefined
-);
+const HealthDataContext = createContext<HealthDataContextType | undefined>(undefined);
 
-// Mock initial data
-const initialHealthData: HealthData = {
-  allergies: {
-    medicine: [],
-    food: [],
-    material: [],
-    doctor: [],
-  },
-  vitals: {
-    bmi: { value: null, history: [] },
-    bloodPressure: { value: null, history: [] },
-    bloodGlucose: { value: null, history: [] },
-    waist: { value: null, history: [] },
-    weight: { value: null, history: [] },
-    height: { value: null, history: [] },
-  },
-  general: {
-    bloodType: null,
-    healthConditions: [],
-    familyHistory: [],
-  },
-  lastUpdated: {},
-};
+// Define a custom hook for localStorage with expiration
+function useLocalStorageWithExpiry(key: string, initialValue: any, expirationInMinutes: number = 30) {
+  // Implementation of the localStorage hook with expiry...
+  const [storedValue, setStoredValue] = useState(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      if (item) {
+        const data = JSON.parse(item);
+        const now = new Date();
+        if (data.expiry && now.getTime() > data.expiry) {
+          // Item has expired, remove it
+          window.localStorage.removeItem(key);
+          return initialValue;
+        }
+        return data.value;
+      }
+      return initialValue;
+    } catch (error) {
+      console.error(error);
+      return initialValue;
+    }
+  });
 
-// Props for provider component
-interface HealthDataProviderProps {
-  children: ReactNode;
+  const setValue = (value: any) => {
+    try {
+      const now = new Date();
+      const item = {
+        value,
+        expiry: now.getTime() + expirationInMinutes * 60 * 1000
+      };
+      window.localStorage.setItem(key, JSON.stringify(item));
+      setStoredValue(value);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return [storedValue, setValue];
 }
 
-// Create provider component
-export const HealthDataProvider: React.FC<HealthDataProviderProps> = ({
-  children,
-}) => {
-  const [healthData, setHealthData] = useState<HealthData>(initialHealthData);
+export const HealthDataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [healthData, setHealthData] = useLocalStorageWithExpiry('healthData', {
+    allergies: {
+      medicine: [],
+      food: [],
+      material: [],
+      doctor: []
+    },
+    vitals: {
+      bmi: { value: null, history: [] },
+      bloodPressure: { value: null, history: [] },
+      bloodGlucose: { value: null, history: [] },
+      waist: { value: null, history: [] },
+      weight: { value: null, history: [] },
+      height: { value: null, history: [] }
+    },
+    general: {
+      bloodType: null,
+      healthConditions: [],
+      familyHistory: []
+    },
+    lastUpdated: {}
+  });
+  
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dataVersion, setDataVersion] = useState(0);
 
-  // Load mock data on mount
+  // Initialize health data from API/Mock
   useEffect(() => {
-    setTimeout(() => {
-      // Mock data with a few sample items
-      setHealthData({
-        ...initialHealthData,
-        allergies: {
-          ...initialHealthData.allergies,
-          medicine: [
-            {
-              id: 1,
-              name: "باراسيتامول",
-              severity: "mild",
-              date: "2023-05-15",
-            },
-            { id: 2, name: "أسبرين", severity: "severe", date: "2023-09-22" },
-          ],
-          food: [
-            { id: 1, name: "فراولة", severity: "mild", date: "2023-04-10" },
-            { id: 2, name: "مكسرات", severity: "severe", date: "2023-07-05" },
-          ],
-        },
-        vitals: {
-          ...initialHealthData.vitals,
-          bmi: {
-            value: 24.5,
-            history: [{ date: "2023-01-01", value: 24.5 }],
-          },
-          bloodPressure: {
-            value: { systolic: 120, diastolic: 80 },
-            history: [
-              { date: "2023-02-01", value: { systolic: 120, diastolic: 80 } },
-            ],
-          },
-        },
-        general: {
-          ...initialHealthData.general,
-          bloodType: "O+",
-          healthConditions: [{ id: 1, name: "ربو خفيف", date: "2022-11-22" }],
-          familyHistory: [
-            { id: 1, name: "سكري", relation: "والد", date: "2022-12-15" },
-          ],
-        },
-        lastUpdated: {
-          "allergies.medicine": "2023-09-22T10:30:00Z",
-          "allergies.food": "2023-07-05T14:20:00Z",
-          "vitals.bmi": "2023-01-01T08:00:00Z",
-          "vitals.bloodPressure": "2023-02-01T09:15:00Z",
-          "general.bloodType": "2022-10-10T13:20:00Z",
-          "general.healthConditions": "2022-11-22T15:40:00Z",
-          "general.familyHistory": "2022-12-15T14:10:00Z",
-        },
-      });
-      setIsLoading(false);
-    }, 1000);
+    loadHealthData();
   }, []);
 
-  // Update health data
-  const updateData = async (
-    category: string,
-    type: string,
-    value: any
-  ): Promise<boolean> => {
+  const loadHealthData = async () => {
     try {
       setIsLoading(true);
-
-      // Create a deep copy of current data
-      const updatedData = JSON.parse(JSON.stringify(healthData)) as HealthData;
-
-      // Update the specific data based on category and type
-      if (category === "allergies") {
-        if (
-          type === "medicine" ||
-          type === "food" ||
-          type === "material" ||
-          type === "doctor"
-        ) {
-          (updatedData.allergies as any)[type] = value;
-        }
-      } else if (category === "vitals") {
-        if (
-          type === "bmi" ||
-          type === "bloodPressure" ||
-          type === "bloodGlucose" ||
-          type === "waist" ||
-          type === "weight" ||
-          type === "height"
-        ) {
-          (updatedData.vitals as any)[type] = value;
-        }
-      } else if (category === "general") {
-        if (
-          type === "bloodType" ||
-          type === "healthConditions" ||
-          type === "familyHistory"
-        ) {
-          (updatedData.general as any)[type] = value;
-        }
+      
+      // Fetch dashboard data from API
+      const response = await apiService.getDashboard();
+      
+      if (response.success && response.data) {
+        // Transform dashboard data to HealthData format
+        const dashboardData = response.data;
+        const newHealthData = { ...healthData };
+        
+        // Extract values from dashboard sections
+        dashboardData.sections.forEach(section => {
+          if (section.id === 'vitals') {
+            section.items.forEach(item => {
+              if (item.type === 'bmi' && item.value !== undefined) {
+                newHealthData.vitals.bmi.value = Number(item.value);
+              } else if (item.type === 'blood-pressure' && item.value) {
+                const [systolic, diastolic] = String(item.value).split('/').map(Number);
+                newHealthData.vitals.bloodPressure.value = { systolic, diastolic };
+              } else if (item.type === 'blood-glucose' && item.value !== undefined) {
+                newHealthData.vitals.bloodGlucose.value = Number(item.value);
+              } else if (item.type === 'waist' && item.value !== undefined) {
+                newHealthData.vitals.waist.value = Number(item.value);
+              } else if (item.type === 'weight' && item.value !== undefined) {
+                newHealthData.vitals.weight.value = Number(item.value);
+              } else if (item.type === 'height' && item.value !== undefined) {
+                newHealthData.vitals.height.value = Number(item.value);
+              }
+            });
+          } else if (section.id === 'general') {
+            section.items.forEach(item => {
+              if (item.type === 'blood-type' && item.value) {
+                newHealthData.general.bloodType = String(item.value);
+              }
+            });
+          }
+        });
+        
+        setHealthData(newHealthData);
+        setError(null);
+      } else {
+        setError(response.error || 'Failed to fetch health data');
       }
-
-      // Update last updated timestamp
-      updatedData.lastUpdated[`${category}.${type}`] = new Date().toISOString();
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Update state
-      setHealthData(updatedData);
-      setError(null);
-      return true;
     } catch (err) {
-      console.error("Error updating health data:", err);
-      setError("فشل في تحديث البيانات الصحية");
+      console.error('Error loading health data:', err);
+      setError('فشل في تحميل البيانات الصحية');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Update specific health data
+  const updateData = async (category: string, type: string, value: any) => {
+    try {
+      setIsLoading(true);
+      
+      // Create a deep copy of the current health data
+      const updatedData = JSON.parse(JSON.stringify(healthData));
+      
+      // Update the specific section based on category and type
+      if (category === 'allergies') {
+        updatedData.allergies[type] = value;
+      } else if (category === 'vitals') {
+        updatedData.vitals[type] = value;
+        
+        // Special case for BMI: also update weight and height
+        if (type === 'bmi' && value.value !== null) {
+          // If weight and height were used to calculate BMI, also update those
+          if (updatedData.vitals.weight.value === null && value.calculatedFrom?.weight) {
+            updatedData.vitals.weight = {
+              value: value.calculatedFrom.weight,
+              history: [...(updatedData.vitals.weight.history || []), {
+                date: new Date().toISOString().split('T')[0],
+                value: value.calculatedFrom.weight
+              }].slice(0, 10)
+            };
+          }
+          
+          if (updatedData.vitals.height.value === null && value.calculatedFrom?.height) {
+            updatedData.vitals.height = {
+              value: value.calculatedFrom.height,
+              history: [...(updatedData.vitals.height.history || []), {
+                date: new Date().toISOString().split('T')[0],
+                value: value.calculatedFrom.height
+              }].slice(0, 10)
+            };
+          }
+        }
+      } else if (category === 'general') {
+        updatedData.general[type] = value;
+      }
+      
+      // Update last updated timestamp
+      const now = new Date().toISOString();
+      updatedData.lastUpdated[`${category}.${type}`] = now;
+      
+      // Call API to update data
+      const apiResult = await updateHealthData(category, type, value);
+      
+      if (apiResult) {
+        // Update local state
+        setHealthData(updatedData);
+        // Increment data version to trigger a refresh
+        setDataVersion(prev => prev + 1);
+        setError(null);
+        return true;
+      } else {
+        throw new Error('Failed to update data via API');
+      }
+    } catch (err) {
+      console.error('Error updating health data:', err);
+      setError('فشل في تحديث البيانات الصحية');
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Force refresh data from API
+  const refreshData = async () => {
+    await loadHealthData();
+  };
+
   return (
-    <HealthDataContext.Provider
-      value={{
-        healthData,
+    <HealthDataContext.Provider 
+      value={{ 
+        healthData, 
         updateData,
-        isLoading,
-        error,
+        refreshData,
+        isLoading, 
+        error 
       }}
     >
       {children}
@@ -245,11 +251,10 @@ export const HealthDataProvider: React.FC<HealthDataProviderProps> = ({
   );
 };
 
-// Custom hook to use the health data context
 export const useHealthData = (): HealthDataContextType => {
   const context = useContext(HealthDataContext);
-  if (context === undefined) {
-    throw new Error("useHealthData must be used within a HealthDataProvider");
+  if (!context) {
+    throw new Error('useHealthData must be used within a HealthDataProvider');
   }
   return context;
 };

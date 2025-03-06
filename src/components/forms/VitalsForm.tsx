@@ -147,52 +147,88 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
   
   // Prepare data based on type
   switch (type) {
-    case 'bmi':
+    case "bmi":
       // BMI is calculated from weight and height
       if (!formValues.weight || !formValues.height) {
-        setFormError('الرجاء إدخال الوزن والطول');
+        setFormError("الرجاء إدخال الوزن والطول");
         return;
       }
-      
+
       const bmiValue = calculateBMI(
         parseFloat(formValues.weight),
         parseFloat(formValues.height)
       );
-      
+
+      // Also update weight and height immediately
+      const weightDate =
+        formValues.date || new Date().toISOString().split("T")[0];
+      const heightDate =
+        formValues.date || new Date().toISOString().split("T")[0];
+
+      // Create weight data
+      const weightVital = {
+        value: formValues.weight,
+        history: [
+          {
+            date: weightDate,
+            value: formValues.weight,
+          },
+          ...(healthData.vitals.weight?.history || []).slice(0, 9),
+        ],
+      };
+
+      // Create height data
+      const heightVital = {
+        value: formValues.height,
+        history: [
+          {
+            date: heightDate,
+            value: formValues.height,
+          },
+          ...(healthData.vitals.height?.history || []).slice(0, 9),
+        ],
+      };
+
+      // Update weight and height asynchronously
+      await Promise.all([
+        updateData("vitals", "weight", weightVital),
+        updateData("vitals", "height", heightVital),
+      ]);
+
       newValue = bmiValue;
       newHistory.unshift({
-        date: formValues.date || new Date().toISOString().split('T')[0],
-        value: bmiValue
+        date: formValues.date || new Date().toISOString().split("T")[0],
+        value: bmiValue,
       });
       break;
-      
-    case 'blood-pressure':
+
+    case "blood-pressure":
       if (!formValues.systolic || !formValues.diastolic) {
-        setFormError('الرجاء إدخال قيم ضغط الدم');
+        setFormError("الرجاء إدخال قيم ضغط الدم");
         return;
       }
-      
+
       newValue = {
         systolic: parseInt(formValues.systolic),
-        diastolic: parseInt(formValues.diastolic)
+        diastolic: parseInt(formValues.diastolic),
       };
-      
+
       newHistory.unshift({
-        date: formValues.date || new Date().toISOString().split('T')[0],
-        value: newValue
+        date: formValues.date || new Date().toISOString().split("T")[0],
+        value: newValue,
       });
       break;
-      
+
     default:
       if (!formValues.value) {
-        setFormError('الرجاء إدخال القيمة');
+        setFormError("الرجاء إدخال القيمة");
         return;
       }
-      
+
       newValue = parseFloat(formValues.value);
       newHistory.unshift({
-        date: formValues.date || new Date().toISOString().split('T')[0],
-        value: newValue
+        date: formValues.date || new Date().toISOString().split("T")[0],
+        value: newValue,
       });
   }
   
@@ -444,7 +480,7 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
       )}
 
       {/* Current value */}
-      <div className="bg-gray-50 rounded-lg p-6 mb-6">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-6">
         <h3 className="text-lg font-medium mb-4">القيمة الحالية</h3>
         {vitalData ? (
           <div>
@@ -505,7 +541,7 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
 
       {/* Additional information based on type */}
       {type === "bmi" && (
-        <div className="bg-gray-50 rounded-lg p-6">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
           <h3 className="text-lg font-medium mb-4">معلومات إضافية</h3>
           <p className="text-gray-600 mb-2">
             مؤشر كتلة الجسم (BMI) هو مقياس للوزن بالنسبة للطول، يستخدم لتقدير ما
@@ -530,7 +566,7 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
       )}
 
       {type === "blood-pressure" && (
-        <div className="bg-gray-50 rounded-lg p-6">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
           <h3 className="text-lg font-medium mb-4">معلومات إضافية</h3>
           <p className="text-gray-600 mb-2">
             يقاس ضغط الدم بقيمتين: الضغط الانقباضي (الرقم العلوي) والضغط
@@ -554,7 +590,7 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
       )}
 
       {type === "blood-glucose" && (
-        <div className="bg-gray-50 rounded-lg p-6">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
           <h3 className="text-lg font-medium mb-4">معلومات إضافية</h3>
           <p className="text-gray-600 mb-2">
             يقاس سكر الدم عادةً بمستويات الجلوكوز في الدم الصائم أو العشوائي.
@@ -799,7 +835,7 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
 
       {/* History list */}
       {historyData.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 rounded-lg">
+        <div className="text-center py-10 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <Activity size={40} className="mx-auto text-gray-300 mb-3" />
           <p className="text-gray-500">لا توجد قياسات سابقة</p>
         </div>
@@ -808,7 +844,7 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
           {historyData.map((item, index) => (
             <div
               key={index}
-              className="p-4 bg-white rounded-lg shadow-sm border border-gray-100"
+              className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100"
             >
               <div className="flex justify-between items-center">
                 <div>
@@ -838,7 +874,7 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
 
   // Main render
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
       {mode === "view"
         ? renderViewMode()
         : mode === "add"

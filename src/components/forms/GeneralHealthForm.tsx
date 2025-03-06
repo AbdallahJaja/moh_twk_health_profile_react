@@ -273,7 +273,7 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
           )}
 
           {/* Blood type display */}
-          <div className="bg-gray-50 rounded-lg p-6">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
             {generalData ? (
               <div className="text-center">
                 <span className="text-4xl font-bold">{generalData}</span>
@@ -294,7 +294,7 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
           </div>
 
           {/* Blood type information */}
-          <div className="mt-6 bg-gray-50 rounded-lg p-6">
+          <div className="mt-6 bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
             <h3 className="text-lg font-medium mb-4">معلومات عن فصائل الدم</h3>
             <p className="text-gray-600 mb-2">
               معرفة فصيلة الدم الخاصة بك أمر ضروري للطوارئ الطبية وعمليات نقل
@@ -332,7 +332,7 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
 
           {/* Items list */}
           {!Array.isArray(generalData) || generalData.length === 0 ? (
-            <div className="text-center py-10 bg-gray-50 rounded-lg">
+            <div className="text-center py-10 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <Users size={40} className="mx-auto text-gray-300 mb-3" />
               <p className="text-gray-500">
                 {type === "health-conditions"
@@ -352,7 +352,7 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
               {generalData.map((item: any) => (
                 <div
                   key={item.id}
-                  className="p-4 bg-white rounded-lg shadow-sm border border-gray-100"
+                  className="p-4 bg-white dark:bg-gray-800  rounded-lg shadow-sm border border-gray-100"
                 >
                   <div className="flex justify-between">
                     <div>
@@ -554,7 +554,7 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
 
   // Main render
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-white dark:bg-gray-800  rounded-lg shadow-sm p-6">
       {isLoading && (
         <div className="fixed inset-0 bg-white bg-opacity-80 z-50 flex items-center justify-center">
           <div className="flex flex-col items-center">

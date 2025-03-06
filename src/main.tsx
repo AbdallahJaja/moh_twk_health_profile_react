@@ -4,16 +4,15 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import './index.css'
-import './locales/i18n'
 
 // Mock TWK implementation for development
 if (!window.TWK) {
   window.TWK = {
     getUserId: () => Promise.resolve({ success: true, result: { data: "1234567890" } }),
-    getUserFullName: () => Promise.resolve({ success: true, result: { data: "عبدالله محمد" } }),
+    getUserFullName: () => Promise.resolve({ success: true, result: { data: "عبدالله خليل محمد" } }),
     getUserGender: () => Promise.resolve({ success: true, result: { data: "male" } }),
-    getUserBirthDate: () => Promise.resolve({ success: true, result: { data: "1990-01-01" } }),
-    getUserBloodType: () => Promise.resolve({ success: true, result: { data: "O+" } }),
+    getUserBirthDate: () => Promise.resolve({ success: true, result: { data: "1986-08-17" } }),
+    getUserBloodType: () => Promise.resolve({ success: true, result: { data: "AB+" } }),
     getUserLocation: () => Promise.resolve({ success: true, result: { data: { latitude: 24.7136, longitude: 46.6753 } } }),
     getDeviceInfo: () => Promise.resolve({ 
       success: true, 
@@ -26,8 +25,8 @@ if (!window.TWK) {
       } 
     })
   };
-  window.TWKAPIBASE = "https://api.tawakkalna.app";
 }
+import "./locales/i18n";
 
 // Define TWK types
 declare global {

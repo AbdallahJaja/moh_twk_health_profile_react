@@ -283,7 +283,7 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
 
       {/* Allergies list */}
       {allergies.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 rounded-lg">
+        <div className="text-center py-10 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <Heart size={40} className="mx-auto text-gray-300 mb-3" />
           <p className="text-gray-500">لا توجد حساسية مسجلة</p>
           {type !== "doctor" && (

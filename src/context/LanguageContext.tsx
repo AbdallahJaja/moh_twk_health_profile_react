@@ -19,22 +19,28 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   // Apply direction changes to document
   useEffect(() => {
-    // Set direction attribute
-    document.documentElement.dir = direction;
-    document.documentElement.lang = language;
-    
-    // Add direction-specific class for CSS targeting
-    if (direction === 'rtl') {
-      document.documentElement.classList.add('rtl');
-      document.documentElement.classList.remove('ltr');
-    } else {
-      document.documentElement.classList.add('ltr');
-      document.documentElement.classList.remove('rtl');
-    }
-    
-    // Store in localStorage
-    localStorage.setItem('language', language);
-  }, [language, direction]);
+  // Get initial language from localStorage or i18n
+  const initialLang = localStorage.getItem('language') as Language || i18n.language as Language || 'ar';
+  const initialDir = initialLang === 'ar' ? 'rtl' : 'ltr';
+  
+  // Set document direction attributes
+  document.documentElement.dir = initialDir;
+  document.documentElement.setAttribute('dir', initialDir);
+  document.documentElement.lang = initialLang;
+  
+  // Set direction class
+  if (initialDir === 'rtl') {
+    document.documentElement.classList.add('rtl');
+    document.documentElement.classList.remove('ltr');
+  } else {
+    document.documentElement.classList.add('ltr');
+    document.documentElement.classList.remove('rtl');
+  }
+  
+  // Update our state
+  setLanguage(initialLang);
+  setDirection(initialDir);
+}, []);
   
   // Listen for i18next language changes
   useEffect(() => {
@@ -51,22 +57,35 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, []);
 
   const toggleLanguage = () => {
-    const newLanguage: Language = language === 'ar' ? 'en' : 'ar';
-    const newDirection: Direction = newLanguage === 'ar' ? 'rtl' : 'ltr';
-    
-    // Set direction immediately
-    document.documentElement.dir = newDirection;
-    if (newDirection === 'rtl') {
-      document.documentElement.classList.add('rtl');
-      document.documentElement.classList.remove('ltr');
-    } else {
-      document.documentElement.classList.add('ltr');
-      document.documentElement.classList.remove('rtl');
-    }
-    
-    // Change language in i18n
-    i18n.changeLanguage(newLanguage);
-  };
+  const newLanguage: Language = language === 'ar' ? 'en' : 'ar';
+  const newDirection: Direction = newLanguage === 'ar' ? 'rtl' : 'ltr';
+  
+  // Apply direction changes directly to HTML element
+  document.documentElement.dir = newDirection;
+  document.documentElement.lang = newLanguage;
+  document.documentElement.setAttribute('dir', newDirection);
+  
+  // Update class for CSS 
+  if (newDirection === 'rtl') {
+    document.documentElement.classList.add('rtl');
+    document.documentElement.classList.remove('ltr');
+  } else {
+    document.documentElement.classList.add('ltr');
+    document.documentElement.classList.remove('rtl');
+  }
+  
+  // Update our component state
+  setLanguage(newLanguage);
+  setDirection(newDirection);
+  
+  // Change language in i18n
+  i18n.changeLanguage(newLanguage);
+  
+  // Force redraw by triggering a small timeout
+  setTimeout(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, 10);
+};
 
   return (
     <LanguageContext.Provider value={{ language, direction, toggleLanguage }}>

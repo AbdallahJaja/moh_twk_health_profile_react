@@ -1,4 +1,4 @@
-// src/context/ThemeContext.tsx
+// @refresh reset// src/context/ThemeContext.tsx
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
@@ -14,14 +14,23 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   // Load theme from localStorage on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      // Use system preference if no saved theme
-      setTheme('dark');
-    }
-  }, []);
+  // Get saved theme from localStorage
+  const savedTheme = localStorage.getItem('theme') as Theme;
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
+  // Determine initial theme
+  const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+  
+  // Apply theme to document
+  if (initialTheme === 'dark') {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+  
+  // Update state
+  setTheme(initialTheme);
+}, []);
 
   // Apply theme to document - this is the key change
   useEffect(() => {
@@ -34,7 +43,29 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+    setTheme((prevTheme) => {
+      const newTheme = prevTheme === "light" ? "dark" : "light";
+
+      // Apply theme change immediately to DOM
+      if (newTheme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+
+      // Force a style refresh to update opacity variables
+      const elements = document.querySelectorAll('[class*="bg-"]');
+      elements.forEach((el) => {
+        // This will force a style recomputation
+        el.classList.add("force-refresh");
+        setTimeout(() => el.classList.remove("force-refresh"), 0);
+      });
+
+      // Save to localStorage
+      localStorage.setItem("theme", newTheme);
+
+      return newTheme;
+    });
   };
 
   return (
