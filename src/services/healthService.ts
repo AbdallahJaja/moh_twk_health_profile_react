@@ -1,5 +1,5 @@
 // Health Service - For interacting with Tawakkalna health APIs
-import { apiService } from './apiService';
+import { apiService } from './api/apiService';
 
 
 // // Utility function to create a document reference number

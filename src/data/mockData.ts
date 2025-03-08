@@ -27,7 +27,8 @@ export interface UserProfile {
 
 export const userProfile: UserProfile = {
   id: '2381026190',
-  name: 'عبدالله خليل محمد',
+  name: 'عبدالله',
+  fullName: 'عبدالله خليل محمد',
   gender: 'male',
   birthDate: '1986-08-17',
   healthRecordId: 'MRN-10254367'

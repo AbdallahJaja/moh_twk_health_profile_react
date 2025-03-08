@@ -7,7 +7,8 @@
   },
   "profile": {
     "healthRecordId": "Health Record ID",
-    "age": "years"
+    "age": "years",
+    "defaultAvatar": "A"
   },
   "sections": {
     "allergies": {
@@ -61,6 +62,44 @@
     "validation": {
       "required": "This field is required",
       "success": "Saved successfully"
+    }
+  },
+  "errors": {
+    "title": "Error",
+    "fetchFailed": "Failed to fetch data",
+    "connectionFailed": "Error connecting to the server"
+  },
+  "alerts": {
+    "title": "Alert",
+    "noData": "No data available"
+  },
+  "loading": {
+    "text": "Loading"
+  },
+  "vitals": {
+    "errors": {
+      "weightHeightRequired": "Please enter weight and height",
+      "bloodPressureRequired": "Please enter blood pressure values",
+      "valueRequired": "Please enter the value",
+      "typeNotSpecified": "Measurement type not specified"
+    },
+    "success": {
+      "dataUpdated": "Data updated successfully"
+    },
+    "labels": {
+      "latestMeasurement": "Latest measurement",
+      "weight": "Weight",
+      "height": "Height",
+      "bmi": "BMI",
+      "bloodPressure": "Blood Pressure",
+      "bloodGlucose": "Blood Glucose",
+      "waist": "Waist Circumference"
+    },
+    "units": {
+      "kg": "kg",
+      "cm": "cm",
+      "mmHg": "mmHg",
+      "mgdl": "mg/dl"
     }
   }
 }

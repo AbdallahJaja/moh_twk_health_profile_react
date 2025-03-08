@@ -6,6 +6,7 @@ import { Activity, ArrowRight, Check, Info, AlertTriangle } from "lucide-react";
 import { calculateBMI } from "../../services/healthService";
 import { getBMICategory } from "../../services/healthService";
 import { getBloodPressureCategory } from "../../services/healthService";
+import { VitalsFormSkeleton } from '../common/skeletons';
 
 interface VitalsFormProps {
   type?: string;
@@ -262,46 +263,48 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
   const success = await updateData('vitals', vitalTypeMap[type], updatedVital);
   
   if (success) {
+    sessionStorage.removeItem("dashboardData"); // Clear cached data
+
     // If type is BMI, also update weight and height
-    if (type === 'bmi' && formValues.weight && formValues.height) {
+    if (type === "bmi" && formValues.weight && formValues.height) {
       // Update weight
       const weightVital = {
         value: parseFloat(formValues.weight),
         history: [
           {
-            date: formValues.date || new Date().toISOString().split('T')[0],
-            value: parseFloat(formValues.weight)
+            date: formValues.date || new Date().toISOString().split("T")[0],
+            value: parseFloat(formValues.weight),
           },
-          ...(healthData.vitals.weight?.history || []).slice(0, 9)
-        ]
+          ...(healthData.vitals.weight?.history || []).slice(0, 9),
+        ],
       };
-      await updateData('vitals', 'weight', weightVital);
-      
+      await updateData("vitals", "weight", weightVital);
+
       // Update height
       const heightVital = {
         value: parseFloat(formValues.height),
         history: [
           {
-            date: formValues.date || new Date().toISOString().split('T')[0],
-            value: parseFloat(formValues.height)
+            date: formValues.date || new Date().toISOString().split("T")[0],
+            value: parseFloat(formValues.height),
           },
-          ...(healthData.vitals.height?.history || []).slice(0, 9)
-        ]
+          ...(healthData.vitals.height?.history || []).slice(0, 9),
+        ],
       };
-      await updateData('vitals', 'height', heightVital);
+      await updateData("vitals", "height", heightVital);
     }
-    
+
     setVitalData(newValue);
     setHistoryData(newHistory);
     updateStatusInfo(newValue);
-    setFormSuccess('تم تحديث البيانات بنجاح');
-    
+    setFormSuccess("تم تحديث البيانات بنجاح");
+
     // Reset form
     setFormValues({});
-    
+
     // Switch back to view mode after a delay
     setTimeout(() => {
-      setMode('view');
+      setMode("view");
       setFormSuccess(null);
     }, 1500);
   }
@@ -446,6 +449,10 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
         return "";
     }
   };
+
+  if (isLoading) {
+    return <VitalsFormSkeleton />;
+  }
 
   // Render view mode
   const renderViewMode = () => (

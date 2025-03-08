@@ -1,4 +1,4 @@
-// src/components/Dashboard.tsx (modified)
+// src/components/Dashboard.tsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -6,7 +6,8 @@ import { useTheme } from "../context/ThemeContext";
 import { useLanguage } from "../context/LanguageContext";
 import { ChevronRight, Moon, Sun, Languages } from "lucide-react";
 import * as Icons from "lucide-react";
-import { apiService } from "../services/apiService";
+import { apiService } from "../services/api/apiService";
+import { DashboardSkeleton } from './common/skeletons/DashboardSkeleton';
 
 // Type for dynamic icon component
 type IconName = keyof typeof Icons;
@@ -15,6 +16,7 @@ interface DashboardData {
   userProfile: {
     id: string;
     name: string;
+    fullName: string;
     gender: string;
     birthDate: string;
     healthRecordId: string;
@@ -48,18 +50,26 @@ const Dashboard: React.FC = () => {
 
   // Fetch dashboard data
   useEffect(() => {
+    const cachedData = sessionStorage.getItem("dashboardData");
+    if (cachedData) {
+      setDashboardData(JSON.parse(cachedData));
+      setLoading(false);
+      return;
+    }
+
     const fetchDashboard = async () => {
       setLoading(true);
       try {
         const response = await apiService.getDashboard();
         if (response.success && response.data) {
           setDashboardData(response.data);
+          sessionStorage.setItem("dashboardData", JSON.stringify(response.data));
           setError(null);
         } else {
-          setError(response.error || "Failed to fetch dashboard data");
+          setError(response.error || t("errors.fetchFailed"));
         }
       } catch (err) {
-        setError("Error connecting to the server");
+        setError(t("errors.connectionFailed"));
         console.error("Dashboard fetch error:", err);
       } finally {
         setLoading(false);
@@ -67,7 +77,7 @@ const Dashboard: React.FC = () => {
     };
 
     fetchDashboard();
-  }, []);
+  }, [t]);
 
   // Calculate age based on birthDate
   const calculateAge = (birthDateStr: string) => {
@@ -105,34 +115,33 @@ const Dashboard: React.FC = () => {
   };
 
   // Get icon component dynamically
-  const getIconComponent = (iconName: string) => {
+  const getIconComponent = (
+    iconName: string,
+    size: number = 20,
+    className: string = ""
+  ) => {
     const RawIcon = Icons[iconName as IconName];
     if (!RawIcon) return null;
 
     // If the icon function expects more than one argument, then it's not a valid JSX component.
-    // You might handle this case differently as needed.
     if (typeof RawIcon === "function" && RawIcon.length > 1) {
       return null;
     }
 
     const IconComponent = RawIcon as React.FC<React.SVGProps<SVGSVGElement>>;
-    return <IconComponent width={20} height={20} />;
+    return <IconComponent width={size} height={size} className={className} />;
   };
 
-  // Loading state
+  // Replace the current loading state with the skeleton
   if (loading) {
-    return (
-      <div className="flex justify-center items-center py-20">
-        <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   // Error state
   if (error) {
     return (
-      <div className="bg-red-50 text-red-700 p-4 rounded-lg">
-        <h3 className="font-bold mb-2">خطأ</h3>
+      <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 p-4 rounded-lg">
+        <h3 className="font-bold mb-2">{t("errors.title")}</h3>
         <p>{error}</p>
       </div>
     );
@@ -141,37 +150,21 @@ const Dashboard: React.FC = () => {
   // No data
   if (!dashboardData) {
     return (
-      <div className="bg-yellow-50 text-yellow-700 p-4 rounded-lg">
-        <h3 className="font-bold mb-2">تنبيه</h3>
-        <p>لا توجد بيانات متاحة</p>
+      <div className="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 p-4 rounded-lg">
+        <h3 className="font-bold mb-2">{t("alerts.title")}</h3>
+        <p>{t("alerts.noData")}</p>
       </div>
     );
   }
+  const isRTL = document.documentElement.dir === "rtl";
 
   return (
     <div className="space-y-6">
       {/* Action buttons section */}
       <div className="flex justify-end">
         <button
-          onClick={() => {
-            toggleTheme();
-            // Force refresh DOM to ensure theme changes are applied
-            setTimeout(() => {
-              const currentTheme = document.documentElement.classList.contains(
-                "dark"
-              )
-                ? "dark"
-                : "light";
-              if (currentTheme !== theme) {
-                if (currentTheme === "dark") {
-                  document.documentElement.classList.add("dark");
-                } else {
-                  document.documentElement.classList.remove("dark");
-                }
-              }
-            }, 10);
-          }}
-          className="p-2 bg-white dark:bg-gray-700 rounded-full shadow transition-colors ml-2"
+          onClick={toggleTheme}
+          className="p-2 bg-white dark:bg-gray-700 rounded-full shadow transition-colors ml-2 hover:bg-gray-100 dark:hover:bg-gray-600"
           aria-label={
             theme === "dark" ? t("settings.lightMode") : t("settings.darkMode")
           }
@@ -184,7 +177,7 @@ const Dashboard: React.FC = () => {
         </button>
         <button
           onClick={toggleLanguage}
-          className="p-2 bg-white dark:bg-gray-700 rounded-full shadow transition-colors"
+          className="p-2 bg-white dark:bg-gray-700 rounded-full shadow transition-colors hover:bg-gray-100 dark:hover:bg-gray-600"
           aria-label={t("settings.language")}
         >
           <Languages size={20} className="dark:text-gray-200" />
@@ -192,20 +185,22 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* User profile section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-colors">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2 transition-colors">
         <div className="flex items-center">
           <div className="flex-shrink-0 h-16 w-16 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden transition-colors">
             {/* User avatar placeholder */}
             <div className="h-full w-full flex items-center justify-center text-gray-500 dark:text-gray-300 font-bold text-xl transition-colors">
-              {dashboardData.userProfile.name?.charAt(0) || "ع"}
+              {dashboardData.userProfile.name?.charAt(0) ||
+                t("profile.defaultAvatar")}
             </div>
           </div>
-          <div className="mr-5">
+          <div className="mr-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors">
               {getGreeting()}
+              {dashboardData.userProfile.name}
             </h2>
             <p className="text-gray-600 dark:text-gray-300 transition-colors">
-              {dashboardData.userProfile.name}
+              {dashboardData.userProfile.fullName}
               {dashboardData.userProfile.birthDate &&
                 `, ${calculateAge(dashboardData.userProfile.birthDate)} ${t(
                   "profile.age"
@@ -232,15 +227,19 @@ const Dashboard: React.FC = () => {
           className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors"
         >
           <div
-            className={`bg-gradient-to-r from-${section.color}-50 to-white dark:from-${section.color}-900/20 dark:to-gray-800 p-4 border-b border-gray-100 dark:border-gray-700 transition-colors`}
+            className={`bg-gradient-to-r from-${section.color}-50 to-white dark:from-${section.color}-900/30 dark:to-gray-800 p-4 border-b border-gray-100 dark:border-gray-700 transition-colors`}
           >
             <div className="flex items-center">
               <div
-                className={`p-2 bg-${section.color}-100 dark:bg-${section.color}-900/30 rounded-full transition-colors`}
+                className={`mr-4 p-3 bg-${section.color}-100 dark:bg-${section.color}-700 rounded-full transition-colors`}
               >
-                {getIconComponent(section.icon)}
+                {getIconComponent(
+                  section.icon,
+                  24,
+                  `text-${section.color}-600 dark:text-${section.color}-300`
+                )}
               </div>
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white mr-3 transition-colors">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white mr-4 transition-colors">
                 {t(section.title)}
               </h2>
             </div>
@@ -258,17 +257,18 @@ const Dashboard: React.FC = () => {
                     {t(item.title)}
                   </h3>
                   {item.count !== undefined && item.count > 0 && (
-                    <span className="mr-2 text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded-full">
+                    <span className="mr-3 text-xs bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded-full">
                       {item.count}
                     </span>
                   )}
                   {item.value !== undefined && (
-                    <span className="mr-2 text-sm text-gray-500 dark:text-gray-400">
+                    <span className="mr-3 text-sm text-gray-500 dark:text-gray-400">
                       {item.value}
                     </span>
                   )}
                 </div>
                 <ChevronRight
+                  style={{ transform: isRTL ? "scaleX(-1)" : undefined }}
                   className="text-gray-400 dark:text-gray-500"
                   size={20}
                 />

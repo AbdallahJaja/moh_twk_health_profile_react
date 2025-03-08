@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useHealthData } from "../../context/HealthDataContext";
 import { Users, Plus, ArrowRight, Check, AlertTriangle } from "lucide-react";
+import { GeneralHealthFormSkeleton } from '../common/skeletons';
 
 interface GeneralHealthFormProps {
   type?: string;
@@ -152,6 +153,7 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
     if (success) {
       setGeneralData(newValue);
       setFormSuccess("تم تحديث البيانات بنجاح");
+      sessionStorage.removeItem("dashboardData"); // Clear cached data
 
       // Reset form
       setFormValues({});
@@ -192,6 +194,7 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
     if (success) {
       setGeneralData(updatedItems);
       setFormSuccess("تم الحذف بنجاح");
+      sessionStorage.removeItem("dashboardData"); // Clear cached data
 
       // Clear success message after delay
       setTimeout(() => {
@@ -553,6 +556,10 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
   );
 
   // Main render
+  if (isLoading) {
+    return <GeneralHealthFormSkeleton />;
+  }
+
   return (
     <div className="bg-white dark:bg-gray-800  rounded-lg shadow-sm p-6">
       {isLoading && (

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useHealthData } from "../../context/HealthDataContext";
 import { Heart, Plus, ArrowRight, Check } from "lucide-react";
+import { AllergiesFormSkeleton } from '../common/skeletons';
 
 interface AllergiesFormProps {
   type?: string;
@@ -138,7 +139,7 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
     if (success) {
       setAllergies(updatedAllergies);
       setFormSuccess("تمت إضافة الحساسية بنجاح");
-
+      sessionStorage.removeItem("dashboardData"); // Clear cached data
       // Reset form
       setAllergyName("");
       setSeverity("");
@@ -193,6 +194,7 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
     if (success) {
       setAllergies(updatedAllergies);
       setFormSuccess("تم تحديث الحساسية بنجاح");
+      sessionStorage.removeItem("dashboardData"); // Clear cached data
 
       // Reset form
       setSelectedAllergy(null);
@@ -223,6 +225,7 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
     if (success) {
       setAllergies(updatedAllergies);
       setFormSuccess("تم حذف الحساسية بنجاح");
+      sessionStorage.removeItem("dashboardData"); // Clear cached data
 
       // Clear success message after delay
       setTimeout(() => {
@@ -283,7 +286,7 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
 
       {/* Allergies list */}
       {allergies.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div className="text-center py-10 bg-gray-50 rounded-lg">
           <Heart size={40} className="mx-auto text-gray-300 mb-3" />
           <p className="text-gray-500">لا توجد حساسية مسجلة</p>
           {type !== "doctor" && (
@@ -475,6 +478,10 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
       </div>
     </div>
   );
+
+  if (isLoading) {
+    return <AllergiesFormSkeleton />;
+  }
 
   // Main render
   return (

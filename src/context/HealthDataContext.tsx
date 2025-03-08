@@ -1,7 +1,7 @@
 // src/context/HealthDataContext.tsx
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { updateHealthData } from '../services/healthService';
-import { apiService } from '../services/apiService';
+import { apiService } from '../services/api/apiService';
 // import { useLocalStorage } from '../hooks/useLocalStorage';
 
 // Health data type definitions
