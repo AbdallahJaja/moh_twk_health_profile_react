@@ -8,6 +8,7 @@ import { ChevronRight, Moon, Sun, Languages } from "lucide-react";
 import * as Icons from "lucide-react";
 import { apiService } from "../services/api/apiService";
 import { DashboardSkeleton } from './common/skeletons/DashboardSkeleton';
+import { twkService } from '../services/twk/twkService';
 
 // Type for dynamic icon component
 type IconName = keyof typeof Icons;
@@ -41,12 +42,14 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
-  const { toggleLanguage } = useLanguage();
+  const { toggleLanguage, language } = useLanguage();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>('');
+  const [userBirthDate, setUserBirthDate] = useState<string | null>(null);
 
   // Fetch dashboard data
   useEffect(() => {
@@ -78,6 +81,29 @@ const Dashboard: React.FC = () => {
 
     fetchDashboard();
   }, [t]);
+
+  useEffect(() => {
+    loadUserData();
+  }, [language]);
+
+  const loadUserData = async () => {
+    try {
+      setLoading(true);
+      const [userData, birthDate] = await Promise.all([
+        twkService.getUserFullName(),
+        twkService.getUserBirthDate()
+      ]);
+      
+      // Set name based on current language
+      const name = language === 'ar' ? userData.full_name_ar : userData.full_name_en;
+      setUserName(name);
+      setUserBirthDate(birthDate);
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Calculate age based on birthDate
   const calculateAge = (birthDateStr: string) => {
@@ -197,14 +223,10 @@ const Dashboard: React.FC = () => {
           <div className="mr-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors">
               {getGreeting()}
-              {dashboardData.userProfile.name}
+              {userName}
             </h2>
             <p className="text-gray-600 dark:text-gray-300 transition-colors">
-              {dashboardData.userProfile.fullName}
-              {dashboardData.userProfile.birthDate &&
-                `, ${calculateAge(dashboardData.userProfile.birthDate)} ${t(
-                  "profile.age"
-                )}`}
+              {userBirthDate && `${calculateAge(userBirthDate)} ${t("profile.age")}`}
             </p>
 
             {/* Health Record ID */}

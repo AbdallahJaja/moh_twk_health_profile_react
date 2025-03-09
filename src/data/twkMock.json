@@ -144,7 +144,7 @@
     {
       "path": "/user_data/birth_date",
       "return": {
-        "birth_date": "2023-10-28"
+        "birth_date": "1990-01-01"
       }
     },
     {
@@ -440,6 +440,16 @@
       "path": "user_data/email",
       "return": {
         "email": "testmail@gmail.com"
+      }
+    },
+    {
+      "path": "/device_info",
+      "return": {
+        "language": "en",
+        "theme": "dark",
+        "deviceType": "mobile",
+        "locale": "ar-SA",
+        "platform": "ios"
       }
     }
   ]

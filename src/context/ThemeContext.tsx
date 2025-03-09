@@ -1,83 +1,56 @@
 // @refresh reset// src/context/ThemeContext.tsx
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { twkService } from '../services/twk/twkService';
 
 type Theme = 'light' | 'dark';
-type ThemeContextType = {
+
+interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
-};
+  setTheme: (theme: Theme) => void;
+}
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>('light');
 
-  // Load theme from localStorage on mount
   useEffect(() => {
-  // Get saved theme from localStorage
-  const savedTheme = localStorage.getItem('theme') as Theme;
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  
-  // Determine initial theme
-  const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-  
-  // Apply theme to document
-  if (initialTheme === 'dark') {
-    document.documentElement.classList.add('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
-  }
-  
-  // Update state
-  setTheme(initialTheme);
-}, []);
+    initializeTheme();
+  }, []);
 
-  // Apply theme to document - this is the key change
-  useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+  const initializeTheme = async () => {
+    try {
+      const deviceInfo = await twkService.getDeviceInfo();
+      updateTheme(deviceInfo.theme);
+    } catch (error) {
+      console.error('Error initializing theme:', error);
+      const storedTheme = localStorage.getItem('theme') as Theme || 'light';
+      updateTheme(storedTheme);
     }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+  };
+
+  const updateTheme = (newTheme: Theme) => {
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+  };
 
   const toggleTheme = () => {
-    setTheme((prevTheme) => {
-      const newTheme = prevTheme === "light" ? "dark" : "light";
-
-      // Apply theme change immediately to DOM
-      if (newTheme === "dark") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-
-      // Force a style refresh to update opacity variables
-      const elements = document.querySelectorAll('[class*="bg-"]');
-      elements.forEach((el) => {
-        // This will force a style recomputation
-        el.classList.add("force-refresh");
-        setTimeout(() => el.classList.remove("force-refresh"), 0);
-      });
-
-      // Save to localStorage
-      localStorage.setItem("theme", newTheme);
-
-      return newTheme;
-    });
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    updateTheme(newTheme);
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme: updateTheme }}>
       {children}
     </ThemeContext.Provider>
   );
 };
 
-export const useTheme = (): ThemeContextType => {
+export const useTheme = () => {
   const context = useContext(ThemeContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;

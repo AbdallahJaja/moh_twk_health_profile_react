@@ -2,6 +2,7 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { updateHealthData } from '../services/healthService';
 import { apiService } from '../services/api/apiService';
+import { Section } from '../data/mockData';
 // import { useLocalStorage } from '../hooks/useLocalStorage';
 
 // Health data type definitions
@@ -124,11 +125,10 @@ export const HealthDataProvider: React.FC<{ children: ReactNode }> = ({ children
         const newHealthData = { ...healthData };
         
         // Extract values from dashboard sections
-        dashboardData.sections.forEach(section => {
+        dashboardData.sections.forEach((section: Section) => {
           if (section.id === 'vitals') {
             section.items.forEach(item => {
               if (item.type === 'bmi' && item.value !== undefined) {
-                newHealthData.vitals.bmi.value = Number(item.value);
               } else if (item.type === 'blood-pressure' && item.value) {
                 const [systolic, diastolic] = String(item.value).split('/').map(Number);
                 newHealthData.vitals.bloodPressure.value = { systolic, diastolic };

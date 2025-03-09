@@ -46,10 +46,18 @@
     margin-left: 1.25rem !important;
 }
 
+[dir="rtl"] .space-x-reverse > * + * {
+  --tw-space-x-reverse: 1 !important;
+}
+
 /* LTR overrides */
 [dir="ltr"] {
     direction: ltr !important;
     text-align: left !important;
+}
+
+[dir="ltr"] .space-x > * + * {
+  --tw-space-x-reverse: 0 !important;
 }
 
 /* Force dark mode styles */
@@ -60,4 +68,8 @@
 .dark body {
     background-color: #1a202c !important;
     color: #e2e8f0 !important;
+}
+
+.rtl-space {
+  @apply space-x-reverse rtl:space-x-reverse ltr:space-x;
 }

@@ -7,23 +7,22 @@ import { calculateBMI } from "../../services/healthService";
 import { getBMICategory } from "../../services/healthService";
 import { getBloodPressureCategory } from "../../services/healthService";
 import { VitalsFormSkeleton } from '../common/skeletons';
+import { useTranslation } from 'react-i18next';
 
 interface VitalsFormProps {
   type?: string;
   title?: string;
 }
 
-const VitalsForm: React.FC<VitalsFormProps> = ({
-  type: propType,
-  title: propTitle,
-}) => {
+const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
   const params = useParams<{ type?: string }>();
   const { healthData, updateData, isLoading } = useHealthData();
+  const { t } = useTranslation();
 
   // Use prop type or param type
-  const type = propType || params.type;
+   type = type || params.type;
   // Use prop title or generate from type
-  const title = propTitle || getFormTitle(type);
+   title = title || getFormTitle(type);
 
   // Form states
   const [mode, setMode] = useState<"view" | "add" | "history">("view");
@@ -457,38 +456,30 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
   // Render view mode
   const renderViewMode = () => (
     <div>
-      {/* Header with add button */}
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold">{title}</h2>
+        <h2 className="text-xl font-bold">{t(`vitals.title.${type}`)}</h2>
         <div className="flex space-x-2 space-x-reverse">
           {historyData.length > 0 && (
             <button
               onClick={() => setMode("history")}
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
             >
-              السجل السابق
+              {t('vitals.form.previousHistory')}
             </button>
           )}
           <button
             onClick={() => setMode("add")}
             className="px-4 py-2 bg-blue-500 text-white rounded-md"
           >
-            تحديث
+            {t('actions.update')}
           </button>
         </div>
       </div>
 
-      {/* Success message */}
-      {formSuccess && (
-        <div className="mb-6 p-3 bg-green-50 text-green-700 rounded-md flex items-center">
-          <Check size={16} className="ml-2" />
-          {formSuccess}
-        </div>
-      )}
-
-      {/* Current value */}
       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-medium mb-4">القيمة الحالية</h3>
+        <h3 className="text-lg font-medium mb-4">
+          {t('vitals.form.currentValue')}
+        </h3>
         {vitalData ? (
           <div>
             <div className="text-3xl font-bold mb-2">
@@ -496,128 +487,29 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
                 ? `${vitalData.systolic}/${vitalData.diastolic}`
                 : vitalData}
               <span className="text-base font-normal text-gray-500 mr-2">
-                {getMeasurementUnit()}
+                {t(`vitals.units.${type}`)}
               </span>
             </div>
 
-            {/* Last update date */}
             {historyData.length > 0 && (
               <div className="text-sm text-gray-500">
-                آخر تحديث: {formatDate(historyData[0]?.date)}
-              </div>
-            )}
-
-            {/* Status information */}
-            {statusInfo && (
-              <div
-                className={`mt-4 p-3 rounded-md ${
-                  statusInfo.color === "green"
-                    ? "bg-green-50 text-green-700"
-                    : statusInfo.color === "yellow"
-                    ? "bg-yellow-50 text-yellow-700"
-                    : statusInfo.color === "orange"
-                    ? "bg-orange-50 text-orange-700"
-                    : statusInfo.color === "red"
-                    ? "bg-red-50 text-red-700"
-                    : "bg-blue-50 text-blue-700"
-                }`}
-              >
-                <div className="flex items-center">
-                  <Info size={16} className="ml-2" />
-                  <div>
-                    <div className="font-medium">{statusInfo.category}</div>
-                    <div className="text-sm">{statusInfo.description}</div>
-                  </div>
-                </div>
+                {t('vitals.form.lastUpdate')}: {formatDate(historyData[0]?.date)}
               </div>
             )}
           </div>
         ) : (
           <div className="text-center py-8">
             <Activity size={40} className="mx-auto text-gray-300 mb-3" />
-            <p className="text-gray-500">لا توجد قيمة مسجلة</p>
+            <p className="text-gray-500">{t('vitals.form.noValue')}</p>
             <button
               onClick={() => setMode("add")}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md"
             >
-              إضافة قياس
+              {t('vitals.form.addMeasurement')}
             </button>
           </div>
         )}
       </div>
-
-      {/* Additional information based on type */}
-      {type === "bmi" && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-          <h3 className="text-lg font-medium mb-4">معلومات إضافية</h3>
-          <p className="text-gray-600 mb-2">
-            مؤشر كتلة الجسم (BMI) هو مقياس للوزن بالنسبة للطول، يستخدم لتقدير ما
-            إذا كان الشخص يعاني من نقص الوزن أو وزن صحي أو زيادة الوزن أو
-            السمنة.
-          </p>
-          <div className="mt-4 space-y-2">
-            <div className="p-2 bg-blue-50 text-blue-700 rounded">
-              نقص في الوزن: أقل من 18.5
-            </div>
-            <div className="p-2 bg-green-50 text-green-700 rounded">
-              وزن طبيعي: 18.5 - 24.9
-            </div>
-            <div className="p-2 bg-yellow-50 text-yellow-700 rounded">
-              زيادة في الوزن: 25 - 29.9
-            </div>
-            <div className="p-2 bg-orange-50 text-orange-700 rounded">
-              سمنة: 30 أو أكثر
-            </div>
-          </div>
-        </div>
-      )}
-
-      {type === "blood-pressure" && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-          <h3 className="text-lg font-medium mb-4">معلومات إضافية</h3>
-          <p className="text-gray-600 mb-2">
-            يقاس ضغط الدم بقيمتين: الضغط الانقباضي (الرقم العلوي) والضغط
-            الانبساطي (الرقم السفلي).
-          </p>
-          <div className="mt-4 space-y-2">
-            <div className="p-2 bg-green-50 text-green-700 rounded">
-              طبيعي: أقل من 120/80
-            </div>
-            <div className="p-2 bg-yellow-50 text-yellow-700 rounded">
-              مرتفع: 120-129/أقل من 80
-            </div>
-            <div className="p-2 bg-orange-50 text-orange-700 rounded">
-              ارتفاع المرحلة الأولى: 130-139/80-89
-            </div>
-            <div className="p-2 bg-red-50 text-red-700 rounded">
-              ارتفاع المرحلة الثانية: 140 أو أعلى/90 أو أعلى
-            </div>
-          </div>
-        </div>
-      )}
-
-      {type === "blood-glucose" && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-          <h3 className="text-lg font-medium mb-4">معلومات إضافية</h3>
-          <p className="text-gray-600 mb-2">
-            يقاس سكر الدم عادةً بمستويات الجلوكوز في الدم الصائم أو العشوائي.
-          </p>
-          <div className="mt-4 space-y-2">
-            <div className="p-2 bg-blue-50 text-blue-700 rounded">
-              منخفض: أقل من 70 ملغم/ديسيلتر
-            </div>
-            <div className="p-2 bg-green-50 text-green-700 rounded">
-              طبيعي (صائم): 70-99 ملغم/ديسيلتر
-            </div>
-            <div className="p-2 bg-yellow-50 text-yellow-700 rounded">
-              مقدمات السكري (صائم): 100-125 ملغم/ديسيلتر
-            </div>
-            <div className="p-2 bg-red-50 text-red-700 rounded">
-              مرتفع (صائم): 126 ملغم/ديسيلتر أو أعلى
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 
@@ -764,7 +656,7 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
                   } rounded-l-md`}
                   onClick={() => setIsFasting(false)}
                 >
-                  فاطر
+                  غير صائم
                 </button>
               </div>
             </div>

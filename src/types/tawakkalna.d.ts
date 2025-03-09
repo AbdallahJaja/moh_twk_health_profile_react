@@ -38,7 +38,6 @@ declare global {
       version: string;
       [key: string]: any;
     };
-    TWKAPIBASE: string;
   }
 }
 

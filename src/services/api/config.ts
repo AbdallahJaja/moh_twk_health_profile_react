@@ -8,10 +8,3 @@ export const API_CONFIG = {
   cacheTime: 5 * 60 * 1000, // 5 minutes
   mockDelay: 500 // Delay for mock responses
 };
-
-export const API_ENDPOINTS = {
-  dashboard: '/dashboard',
-  vitals: '/vitals',
-  allergies: '/allergies',
-  medications: '/medications',
-} as const;

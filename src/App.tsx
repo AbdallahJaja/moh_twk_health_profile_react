@@ -23,8 +23,8 @@ import './locales/i18n';
 
 const App: React.FC = () => {
   return (
-    <LanguageProvider>
-      <ThemeProvider>
+    <ThemeProvider>
+      <LanguageProvider>
         <HealthDataProvider>
           <div className="min-h-screen bg-[#f9fafb] dark:bg-[#1f2937] font-sans transition-colors duration-200">
             <Header />
@@ -105,8 +105,8 @@ const App: React.FC = () => {
             </main>
           </div>
         </HealthDataProvider>
-      </ThemeProvider>
-    </LanguageProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 };
 

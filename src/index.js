@@ -26,8 +26,6 @@ window.TWK = {
   version: "1.8",
 };
 
-// Define TWK API base endpoint for testing
-window.TWKAPIBASE = "https://api.tawakkalna.app";
 root.render(
   <StrictMode>
     <BrowserRouter>
