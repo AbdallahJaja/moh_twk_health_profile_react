@@ -2,8 +2,22 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useHealthData } from "../../context/HealthDataContext";
-import { Heart, Plus, ArrowRight, Check } from "lucide-react";
+import { 
+  Heart, 
+  Plus, 
+  ArrowLeft,
+  ArrowRight, 
+  Check, 
+  Edit2, 
+  Trash2,
+  ChevronLeft,
+  ChevronRight, 
+  AlertTriangle
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "../../context/LanguageContext";
 import { AllergiesFormSkeleton } from '../common/skeletons';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 
 interface AllergiesFormProps {
   type?: string;
@@ -11,17 +25,33 @@ interface AllergiesFormProps {
 }
 
 const severityOptions = [
-  { id: "mild", label: "خفيفة", color: "yellow" },
-  { id: "moderate", label: "متوسطة", color: "orange" },
-  { id: "severe", label: "شديدة", color: "red" },
+  { id: "mild", labelKey: "allergies.severity.mild", color: "yellow" },
+  { id: "moderate", labelKey: "allergies.severity.moderate", color: "orange" },
+  { id: "severe", labelKey: "allergies.severity.severe", color: "red" },
 ];
+
+const getSeverityStyles = (severity: string): string => {
+  switch (severity) {
+    case 'mild':
+      return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300';
+    case 'moderate':
+      return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300';
+    case 'severe':
+      return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
+    default:
+      return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+  }
+};
 
 const AllergiesForm: React.FC<AllergiesFormProps> = ({
   type: propType,
   title: propTitle,
 }) => {
+  const { t } = useTranslation();
   const params = useParams<{ type?: string }>();
   const { healthData, updateData, isLoading } = useHealthData();
+  const { language } = useLanguage();
+  const direction = language === 'ar' ? 'rtl' : 'ltr';
 
   // Use prop type or param type
   const type = propType || params.type;
@@ -37,47 +67,51 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
   const [severity, setSeverity] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    itemId: number | null;
+  }>({
+    isOpen: false,
+    itemId: null
+  });
+
+  // Add state for filtered suggestions
+  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Get form title based on type
   function getFormTitle(formType?: string): string {
-    switch (formType) {
-      case "medicine":
-        return "حساسية الأدوية";
-      case "food":
-        return "حساسية الأطعمة";
-      case "material":
-        return "حساسية المواد";
-      case "doctor":
-        return "حساسية مدخلة من الطبيب";
-      default:
-        return "الحساسية";
-    }
+    return t(`allergies.types.${formType || 'default'}.title`);
   }
 
   // Suggestions based on type
   const getSuggestions = (): string[] => {
-    switch (type) {
-      case "medicine":
-        return [
-          "باراسيتامول",
-          "أسبرين",
-          "أموكسيسيلين",
-          "إيبوبروفين",
-          "سيفالوسبورين",
-        ];
-      case "food":
-        return ["فراولة", "مكسرات", "بيض", "حليب", "قمح", "سمك"];
-      case "material":
-        return ["لاتكس", "نيكل", "مطاط", "صوف", "غبار"];
-      default:
-        return [];
+    try {
+      const suggestions = t(`allergies.suggestions.${type}`, { returnObjects: true });
+      return Array.isArray(suggestions)
+        ? suggestions.filter((item): item is string => typeof item === 'string')
+        : [];
+    } catch {
+      return [];
     }
   };
 
-  // Filter suggestions based on search term
-  const filteredSuggestions = getSuggestions().filter((suggestion) =>
-    suggestion.includes(searchTerm)
-  );
+  // Add handleSuggestionFilter function
+  const handleSuggestionFilter = (value: string) => {
+    const allSuggestions = getSuggestions();
+    const filtered = allSuggestions.filter(suggestion =>
+      suggestion.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredSuggestions(filtered);
+    setShowSuggestions(true);
+  };
+
+  // Add handleSuggestionSelect function
+  const handleSuggestionSelect = (suggestion: string) => {
+    setAllergyName(suggestion);
+    setShowSuggestions(false);
+  };
 
   // Initialize allergies from context
   useEffect(() => {
@@ -103,52 +137,67 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
 
   // Handle adding a new allergy
   const handleAddAllergy = async () => {
-    // Validate form
-    if (!allergyName.trim()) {
-      setFormError("الرجاء إدخال اسم الحساسية");
-      return;
-    }
+    try {
+      setIsSubmitting(true);
+      // Validate form
+      if (!allergyName.trim()) {
+        setFormError(t('validation.required.name'));
+        return;
+      }
 
-    if (!severity) {
-      setFormError("الرجاء اختيار شدة الحساسية");
-      return;
-    }
+      if (!severity) {
+        setFormError(t('validation.required.severity'));
+        return;
+      }
 
-    // Clear errors
-    setFormError(null);
+      if (!type) {
+        setFormError(t('validation.required.type'));
+        return;
+      }
 
-    // Create new allergy object
-    const newAllergy = {
-      id: Date.now(),
-      name: allergyName.trim(),
-      severity,
-      date: new Date().toISOString().split("T")[0],
-    };
+      // Clear errors
+      setFormError(null);
 
-    // Add to allergies list
-    const updatedAllergies = [...allergies, newAllergy];
+      // Create new allergy object
+      const newAllergy = {
+        id: Date.now(),
+        name: allergyName.trim(),
+        severity,
+        date: new Date().toISOString().split("T")[0],
+      };
 
-    // Update context data
-    if (!type) {
-      setFormError("نوع الحساسية غير محدد");
-      return;
-    }
+      // Add to allergies list
+      const updatedAllergies = [...allergies, newAllergy];
 
-    const success = await updateData("allergies", type, updatedAllergies);
+      // Update context data
+      if (!type) {
+        setFormError("نوع الحساسية غير محدد");
+        return;
+      }
 
-    if (success) {
-      setAllergies(updatedAllergies);
-      setFormSuccess("تمت إضافة الحساسية بنجاح");
-      sessionStorage.removeItem("dashboardData"); // Clear cached data
-      // Reset form
-      setAllergyName("");
-      setSeverity("");
-
-      // Switch back to list mode after a delay
-      setTimeout(() => {
-        setMode("list");
-        setFormSuccess(null);
-      }, 1500);
+      if (!type) {
+        setFormError("نوع الحساسية غير محدد");
+        return;
+      }
+  
+      if (!type) return false;
+      const success = await updateData("allergies", type, updatedAllergies);
+  
+      if (success) {
+        setAllergies(updatedAllergies);
+        setFormSuccess(t('allergies.success.add'));
+        sessionStorage.removeItem("dashboardData"); // Clear cached data
+        // Don't clear form immediately
+        setTimeout(() => {
+          setMode("list");
+          setFormSuccess(null);
+          // Reset form after transition
+          setAllergyName("");
+          setSeverity("");
+        }, 1500);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -158,12 +207,17 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
 
     // Validate form
     if (!allergyName.trim()) {
-      setFormError("الرجاء إدخال اسم الحساسية");
+      setFormError(t('validation.required.name'));
       return;
     }
 
     if (!severity) {
-      setFormError("الرجاء اختيار شدة الحساسية");
+      setFormError(t('validation.required.severity'));
+      return;
+    }
+
+    if (!type) {
+      setFormError(t('validation.required.type'));
       return;
     }
 
@@ -193,7 +247,7 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
 
     if (success) {
       setAllergies(updatedAllergies);
-      setFormSuccess("تم تحديث الحساسية بنجاح");
+      setFormSuccess(t('allergies.success.update'));
       sessionStorage.removeItem("dashboardData"); // Clear cached data
 
       // Reset form
@@ -210,28 +264,33 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
   };
 
   // Handle deleting an allergy
-  const handleDeleteAllergy = async (id: number) => {
-    // Filter out the selected allergy
-    const updatedAllergies = allergies.filter((allergy) => allergy.id !== id);
+  const handleDeleteClick = (id: number) => {
+    setDeleteConfirm({
+      isOpen: true,
+      itemId: id
+    });
+  };
 
-    // Update context data
-    if (!type) {
-      setFormError("نوع الحساسية غير محدد");
-      return;
-    }
-
+  const handleDeleteConfirm = async () => {
+    if (deleteConfirm.itemId === null) return;
+  
+    const updatedAllergies = allergies.filter(
+      (allergy) => allergy.id !== deleteConfirm.itemId
+    );
+    if (!type) return;
     const success = await updateData("allergies", type, updatedAllergies);
-
+  
     if (success) {
       setAllergies(updatedAllergies);
-      setFormSuccess("تم حذف الحساسية بنجاح");
-      sessionStorage.removeItem("dashboardData"); // Clear cached data
-
-      // Clear success message after delay
+      setFormSuccess(t('allergies.success.delete'));
+      sessionStorage.removeItem("dashboardData");
+  
       setTimeout(() => {
         setFormSuccess(null);
       }, 1500);
     }
+  
+    setDeleteConfirm({ isOpen: false, itemId: null });
   };
 
   // Handle selecting an allergy for editing
@@ -250,13 +309,14 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
 
   // Format date to local format
   const formatDate = (dateString: string) => {
-    if (!dateString) return "غير متوفر";
+    if (!dateString) return t('common.notAvailable');
 
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat("ar-SA", {
+    return new Intl.DateTimeFormat(language, {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
+      calendar: "gregory"
     }).format(date);
   };
 
@@ -265,37 +325,44 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
     <div>
       {/* Header with add button */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">{title}</h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+          {t(`allergies.types.${type}.title`)}
+        </h2>
         <button
           onClick={() => setMode("add")}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md flex items-center"
-          disabled={type === "doctor"} // Can't add allergies entered by doctors
+          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md 
+                   flex items-center transition-colors disabled:opacity-50"
+          disabled={type === "doctor"}
         >
-          <Plus size={16} className="ml-1" />
-          إضافة حساسية
+          <Plus size={16} className="rtl:ml-2 ltr:mr-2" />
+          {t('allergies.actions.add')}
         </button>
       </div>
 
       {/* Success message */}
       {formSuccess && (
-        <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md flex items-center">
-          <Check size={16} className="ml-2" />
+        <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 text-green-700 
+                      dark:text-green-300 rounded-md flex items-center">
+          <Check size={16} className="rtl:ml-2 ltr:mr-2" />
           {formSuccess}
         </div>
       )}
 
-      {/* Allergies list */}
+      {/* Empty state */}
       {allergies.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 rounded-lg">
-          <Heart size={40} className="mx-auto text-gray-300 mb-3" />
-          <p className="text-gray-500">لا توجد حساسية مسجلة</p>
+        <div className="text-center py-10 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+          <Heart size={40} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+          <p className="text-gray-500 dark:text-gray-400">
+            {t('allergies.noData')}
+          </p>
           {type !== "doctor" && (
             <button
               onClick={() => setMode("add")}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md inline-flex items-center"
+              className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white 
+                       rounded-md inline-flex items-center transition-colors"
             >
-              <Plus size={16} className="ml-1" />
-              إضافة حساسية
+              <Plus size={16} className="rtl:ml-2 ltr:mr-2" />
+              {t('allergies.actions.add')}
             </button>
           )}
         </div>
@@ -304,48 +371,45 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
           {allergies.map((allergy) => (
             <div
               key={allergy.id}
-              className="p-4 bg-white rounded-lg shadow-sm border border-gray-100"
+              className="p-4 bg-white dark:bg-gray-700 rounded-lg shadow-sm 
+                       border border-gray-200 dark:border-gray-600"
             >
               <div className="flex justify-between">
                 <div>
-                  <h3 className="font-medium">{allergy.name}</h3>
-                  <p className="text-sm text-gray-500">
-                    تاريخ التسجيل: {formatDate(allergy.date)}
+                  <h3 className="font-medium text-gray-900 dark:text-white">
+                    {allergy.name}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('allergies.dateRecorded')}: {formatDate(allergy.date)}
                   </p>
                 </div>
                 <div className="flex items-center">
-                  <span
-                    className={`
-                      px-2 py-1 text-xs rounded-full ml-2
-                      ${
-                        allergy.severity === "mild"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : allergy.severity === "moderate"
-                          ? "bg-orange-100 text-orange-800"
-                          : "bg-red-100 text-red-800"
-                      }
-                    `}
-                  >
-                    {allergy.severity === "mild"
-                      ? "خفيفة"
-                      : allergy.severity === "moderate"
-                      ? "متوسطة"
-                      : "شديدة"}
+                  <span className={`
+                    px-2 py-1 text-xs rounded-full rtl:ml-2 ltr:mr-2
+                    ${getSeverityStyles(allergy.severity)}
+                  `}>
+                    {t(`allergies.severity.${allergy.severity}`)}
                   </span>
 
                   {type !== "doctor" && (
-                    <div className="flex">
+                    <div className="flex rtl:space-x-reverse space-x-2">
                       <button
                         onClick={() => handleEditAllergy(allergy)}
-                        className="p-1 text-blue-500 hover:text-blue-700 ml-2"
+                        className="p-1 text-blue-500 hover:text-blue-700 
+                                 dark:text-blue-400 dark:hover:text-blue-300
+                                 transition-colors"
                       >
-                        تعديل
+                        <Edit2 size={16} />
+                        <span className="sr-only">{t('actions.edit')}</span>
                       </button>
                       <button
-                        onClick={() => handleDeleteAllergy(allergy.id)}
-                        className="p-1 text-red-500 hover:text-red-700"
+                        onClick={() => handleDeleteClick(allergy.id)}
+                        className="p-1 text-red-500 hover:text-red-700
+                                 dark:text-red-400 dark:hover:text-red-300
+                                 transition-colors"
                       >
-                        حذف
+                        <Trash2 size={16} />
+                        <span className="sr-only">{t('actions.delete')}</span>
                       </button>
                     </div>
                   )}
@@ -371,34 +435,31 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
             setSeverity("");
             setFormError(null);
           }}
-          className="p-2 rounded-full hover:bg-gray-100"
+          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 
+                   text-gray-400 dark:text-gray-200 transition-colors"
         >
-          <ArrowRight size={20} />
+          {direction === 'rtl' ? <ArrowRight size={20} /> : <ArrowLeft size={20} />}
         </button>
-        <h2 className="text-xl font-bold mr-2">
-          {mode === "add" ? "إضافة حساسية جديدة" : "تعديل الحساسية"}
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white rtl:mr-2 ltr:ml-2">
+          {mode === "add" 
+            ? t('allergies.form.addTitle') 
+            : t('allergies.form.editTitle')}
         </h2>
       </div>
 
       {/* Error message */}
       {formError && (
-        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
-          {formError}
-        </div>
-      )}
-
-      {/* Success message */}
-      {formSuccess && (
-        <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md flex items-center">
-          <Check size={16} className="ml-2" />
-          {formSuccess}
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-700 
+                       dark:text-red-300 rounded-md flex items-center">
+          <AlertTriangle size={16} className="rtl:ml-2 ltr:mr-2" />
+          {t(`validation.${formError}`)}
         </div>
       )}
 
       {/* Search box with suggestions */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          اسم الحساسية
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          {t('allergies.form.nameLabel')}
         </label>
         <div className="relative">
           <input
@@ -406,21 +467,34 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
             value={allergyName}
             onChange={(e) => {
               setAllergyName(e.target.value);
-              setSearchTerm(e.target.value);
+              handleSuggestionFilter(e.target.value);
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            placeholder="أدخل اسم الحساسية"
+            onFocus={() => handleSuggestionFilter(allergyName)}
+            onBlur={() => {
+              // Delay hiding suggestions to allow clicking them
+              setTimeout(() => setShowSuggestions(false), 200);
+            }}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 
+                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white 
+                       rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+            placeholder={t(`allergies.types.${type}.placeholder`)}
           />
-          {searchTerm && filteredSuggestions.length > 0 && (
-            <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 py-1">
+          
+          {/* Suggestions dropdown */}
+          {showSuggestions && filteredSuggestions.length > 0 && (
+            <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 
+                           border border-gray-200 dark:border-gray-600 rounded-md 
+                           shadow-lg max-h-60 overflow-auto">
               {filteredSuggestions.map((suggestion, index) => (
-                <div
+                <button
                   key={index}
-                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => handleSelectSuggestion(suggestion)}
+                  className="w-full px-4 py-2 text-left text-gray-900 dark:text-white 
+                           hover:bg-gray-100 dark:hover:bg-gray-600 
+                           focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-600"
+                  onMouseDown={() => handleSuggestionSelect(suggestion)}
                 >
                   {suggestion}
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -429,8 +503,8 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
 
       {/* Severity selection */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          شدة الحساسية
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          {t('allergies.severity.label')}
         </label>
         <div className="space-y-2">
           {severityOptions.map((option) => (
@@ -438,10 +512,11 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
               key={option.id}
               className={`
                 p-3 border rounded-md cursor-pointer flex items-center
+                transition-colors
                 ${
                   severity === option.id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200"
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-400"
+                    : "border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                 }
               `}
               onClick={() => setSeverity(option.id)}
@@ -449,10 +524,11 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
               <div
                 className={`
                 w-5 h-5 rounded-full flex items-center justify-center 
+                transition-colors
                 ${
                   severity === option.id
-                    ? "bg-blue-500"
-                    : "border border-gray-300"
+                    ? "bg-blue-500 dark:bg-blue-400"
+                    : "border border-gray-300 dark:border-gray-500"
                 }
               `}
               >
@@ -460,7 +536,9 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
                   <Check size={12} className="text-white" />
                 )}
               </div>
-              <span className="mr-2">{option.label}</span>
+              <span className="rtl:mr-2 ltr:ml-2 text-gray-900 dark:text-white">
+                {t(option.labelKey)}
+              </span>
             </div>
           ))}
         </div>
@@ -470,10 +548,15 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
       <div className="flex justify-end">
         <button
           onClick={mode === "add" ? handleAddAllergy : handleUpdateAllergy}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md"
+          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md
+                     transition-colors disabled:opacity-50"
           disabled={isLoading}
         >
-          {isLoading ? "جاري الحفظ..." : mode === "add" ? "إضافة" : "تحديث"}
+          {isLoading 
+            ? t('actions.saving') 
+            : mode === "add" 
+              ? t('actions.add') 
+              : t('actions.update')}
         </button>
       </div>
     </div>
@@ -485,15 +568,14 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
 
   // Main render
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      {isLoading && (
-        <div className="fixed inset-0 bg-white bg-opacity-80 z-50 flex items-center justify-center">
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
-            <p className="mt-4 text-gray-600">جاري معالجة البيانات...</p>
-          </div>
-        </div>
-      )}
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, itemId: null })}
+        onConfirm={handleDeleteConfirm}
+        title={t('allergies.confirm.delete.title')}
+        message={t('allergies.confirm.delete.message')}
+      />
       {mode === "list" ? renderListView() : renderForm()}
     </div>
   );

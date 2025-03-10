@@ -140,8 +140,8 @@ class TWKService {
   async getUserBirthDate(): Promise<Date> {
     try {
       if (env.USE_TWK_MOCK) {
-        const mockResponse = this.getMockData<string>("/user_data/birth_date");
-        return new Date(mockResponse || "1990-01-01");
+      const mockResponse = this.getMockData<{ birth_date: string }>("/user_data/birth_date" );
+        return new Date(mockResponse?.birth_date || "1990-01-01");
       }
 
       const response = await window.TWK?.getUserBirthDate();
@@ -152,22 +152,6 @@ class TWKService {
       return response.result.data;
     } catch (error) {
       console.error("Error getting birth date:", error);
-      throw error;
-    }
-  }
-
-  async getFirstName(): Promise<string> {
-    try {
-      const [fullName, deviceInfo] = await Promise.all([
-        this.getUserFullName(),
-        this.getDeviceInfo()
-      ]);
-      const name =
-        deviceInfo.language === "ar" ? fullName.full_name_ar : fullName.full_name_en;
-
-      return name.split(" ")[0];
-    } catch (error) {
-      console.error("Error getting first name:", error);
       throw error;
     }
   }

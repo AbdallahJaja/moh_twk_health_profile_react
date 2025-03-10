@@ -49,7 +49,8 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>('');
-  const [userBirthDate, setUserBirthDate] = useState<string | null>(null);
+  const [userBirthDate, setUserBirthDate] = useState<Date | null>(null);
+  const [firstName, setFirstName] = useState<string>('');
 
   // Fetch dashboard data
   useEffect(() => {
@@ -89,14 +90,22 @@ const Dashboard: React.FC = () => {
   const loadUserData = async () => {
     try {
       setLoading(true);
-      const [userData, birthDate] = await Promise.all([
+      const [userFullName, birthDate] = await Promise.all([
         twkService.getUserFullName(),
-        twkService.getUserBirthDate()
+        twkService.getUserBirthDate(),
       ]);
       
       // Set name based on current language
-      const name = language === 'ar' ? userData.full_name_ar : userData.full_name_en;
+      const name =
+        language === "ar"
+          ? userFullName.full_name_ar
+          : userFullName.full_name_en;
       setUserName(name);
+      const firstName =
+        language === "ar"
+          ? userFullName.full_name_ar.split(" ")[0]
+          : userFullName.full_name_en.split(" ")[0];
+      setFirstName(firstName);
       setUserBirthDate(birthDate);
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -106,8 +115,7 @@ const Dashboard: React.FC = () => {
   };
 
   // Calculate age based on birthDate
-  const calculateAge = (birthDateStr: string) => {
-    const birthDate = new Date(birthDateStr);
+  const calculateAge = (birthDate: Date) => {
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -213,21 +221,23 @@ const Dashboard: React.FC = () => {
       {/* User profile section */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2 transition-colors">
         <div className="flex items-center">
-          <div className="flex-shrink-0 h-16 w-16 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden transition-colors">
+          <div className="flex-shrink-0 h-16 w-16 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden transition-colors mr-3">
             {/* User avatar placeholder */}
             <div className="h-full w-full flex items-center justify-center text-gray-500 dark:text-gray-300 font-bold text-xl transition-colors">
-              {dashboardData.userProfile.name?.charAt(0) ||
+              {firstName?.charAt(0) ||
                 t("profile.defaultAvatar")}
             </div>
           </div>
           <div className="mr-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors">
               {getGreeting()}
-              {userName}
+              {firstName}
             </h2>
             <p className="text-gray-600 dark:text-gray-300 transition-colors">
-              {userName}
-              {userBirthDate && `${calculateAge(userBirthDate)} ${t("profile.age")}`}
+              <span className="mr-1"> {userName},</span>
+
+              {userBirthDate &&
+                `${calculateAge(userBirthDate)} ${t("profile.age")}`}
             </p>
 
             {/* Health Record ID */}
@@ -280,12 +290,12 @@ const Dashboard: React.FC = () => {
                     {t(item.title)}
                   </h3>
                   {item.count !== undefined && item.count > 0 && (
-                    <span className="mr-3 text-xs bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded-full">
+                    <span className="mr-5 text-xs bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded-full">
                       {item.count}
                     </span>
                   )}
                   {item.value !== undefined && (
-                    <span className="mr-3 text-sm text-gray-500 dark:text-gray-400">
+                    <span className="mr-5 text-sm text-gray-500 dark:text-gray-400">
                       {item.value}
                     </span>
                   )}
