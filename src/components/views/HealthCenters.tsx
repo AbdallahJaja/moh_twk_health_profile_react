@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Navigation, Phone, MapPin } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 const HealthCenters: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
   
   // Mock health center data
   const healthCenter = {
@@ -24,52 +21,52 @@ const HealthCenters: React.FC = () => {
   };
   
   // Fetch user location
-  const getUserLocation = async () => {
-    setLoading(true);
-    setError(false);
-    
-    try {
-      // Try to get location from TWK first
-      if (window.TWK && window.TWK.getUserLocation) {
-        const twkLocation = await window.TWK.getUserLocation();
-        
-        if (twkLocation.success && twkLocation.result.data) {
-          const { latitude, longitude } = twkLocation.result.data;
-          setUserLocation({ lat: latitude, lng: longitude });
-          setLoading(false);
-          return;
-        }
-      }
+  useEffect(() => {
+    const getUserLocation = async () => {
+      setLoading(true);
       
-      // Fallback to browser geolocation if TWK doesn't provide it
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          position => {
-            setUserLocation({
-              lat: position.coords.latitude,
-              lng: position.coords.longitude
-            });
+      try {
+        // Try to get location from TWK first
+        if (window.TWK && window.TWK.getUserLocation) {
+          const twkLocation = await window.TWK.getUserLocation();
+          
+          if (twkLocation.success && twkLocation.result.data) {
+            const { latitude, longitude } = twkLocation.result.data;
+            setUserLocation({ lat: latitude, lng: longitude });
             setLoading(false);
-          },
-          error => {
-            console.error('Error getting location:', error);
-            setError(true);
-            setLoading(false);
+            return;
           }
-        );
-      } else {
-        console.error('Geolocation not supported');
-        setError(true);
+        }
+        
+        // Fallback to browser geolocation if TWK doesn't provide it
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            position => {
+              setUserLocation({
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+              });
+              setLoading(false);
+            },
+            error => {
+              console.error('Error getting location:', error);
+              // Use a default location as fallback
+              setUserLocation({ lat: 24.7136, lng: 46.6753 }); // Default to Riyadh
+              setLoading(false);
+            }
+          );
+        } else {
+          console.error('Geolocation not supported');
+          setUserLocation({ lat: 24.7136, lng: 46.6753 }); // Default to Riyadh
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error getting user location:', error);
+        setUserLocation({ lat: 24.7136, lng: 46.6753 }); // Default to Riyadh
         setLoading(false);
       }
-    } catch (error) {
-      console.error('Error getting user location:', error);
-      setError(true);
-      setLoading(false);
-    }
-  };
-  
-  useEffect(() => {
+    };
+    
     getUserLocation();
   }, []);
   
@@ -108,38 +105,17 @@ const HealthCenters: React.FC = () => {
         <button
           onClick={() => navigate(-1)}
           className="p-2 rounded-full hover:bg-gray-100"
-          aria-label={t('actions.back')}
         >
           <ArrowRight size={20} />
         </button>
-        <h2 className="text-xl font-bold mr-2">
-          {t('sections.general.healthCenters')}
-        </h2>
+        <h2 className="text-xl font-bold mr-2">المركز الصحي المخصص</h2>
       </div>
 
-      {error && (
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg">
-          <h3 className="font-bold mb-2">{t('errors.title')}</h3>
-          <p>{t('errors.locationFailed')}</p>
-          <button
-            onClick={getUserLocation}
-            className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md"
-          >
-            {t('actions.retry')}
-          </button>
+      {loading ? (
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-6 flex justify-center items-center min-h-[200px]">
+          <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
         </div>
-      )}
-
-      {loading && (
-        <div className="flex items-center justify-center p-8">
-          <div className="text-center">
-            <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-gray-500">{t('loading.text')}</p>
-          </div>
-        </div>
-      )}
-
-      {!loading && !error && (
+      ) : (
         <>
           {/* Map section */}
           <div className="bg-gray-100 rounded-lg h-48 mb-6 relative overflow-hidden">
@@ -158,7 +134,7 @@ const HealthCenters: React.FC = () => {
             <div className="flex justify-between items-start">
               <h3 className="font-bold text-lg">{healthCenter.name}</h3>
               <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                {t('healthCenter.distance', { distance: healthCenter.distance })}
+                {healthCenter.distance} كم
               </span>
             </div>
 
@@ -166,22 +142,18 @@ const HealthCenters: React.FC = () => {
 
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div>
-                <span className="text-xs text-gray-500">
-                  {t('healthCenter.workingHours')}:
-                </span>
+                <span className="text-xs text-gray-500">ساعات العمل:</span>
                 <p className="text-sm">{healthCenter.workingHours}</p>
               </div>
               <div>
-                <span className="text-xs text-gray-500">
-                  {t('healthCenter.phone')}:
-                </span>
+                <span className="text-xs text-gray-500">رقم الهاتف:</span>
                 <p className="text-sm">{healthCenter.phone}</p>
               </div>
             </div>
 
             <div className="mt-4">
               <span className="text-xs text-gray-500 block mb-1">
-                {t('healthCenter.availableServices')}:
+                الخدمات المتوفرة:
               </span>
               <div className="flex flex-wrap gap-1">
                 {healthCenter.services.map((service, idx) => (
@@ -189,7 +161,7 @@ const HealthCenters: React.FC = () => {
                     key={idx}
                     className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded"
                   >
-                    {t(`healthCenter.services.${service}`)}
+                    {service}
                   </span>
                 ))}
               </div>
@@ -201,20 +173,20 @@ const HealthCenters: React.FC = () => {
                 className="flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded-md"
               >
                 <Navigation size={16} className="ml-1" />
-                {t('actions.directions')}
+                الاتجاهات
               </button>
               <button
                 onClick={handleCall}
                 className="flex items-center justify-center bg-gray-100 text-gray-800 py-2 px-4 rounded-md"
               >
                 <Phone size={16} className="ml-1" />
-                {t('actions.call')}
+                اتصال
               </button>
             </div>
           </div>
 
           <div className="text-center text-sm text-gray-500">
-            {t('healthCenter.assignedMessage')}
+            هذا هو المركز الصحي المخصص لك بناءً على عنوانك المسجل
           </div>
         </>
       )}

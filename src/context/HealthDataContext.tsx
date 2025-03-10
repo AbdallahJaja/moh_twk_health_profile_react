@@ -129,6 +129,7 @@ export const HealthDataProvider: React.FC<{ children: ReactNode }> = ({ children
           if (section.id === 'vitals') {
             section.items.forEach(item => {
               if (item.type === 'bmi' && item.value !== undefined) {
+                newHealthData.vitals.bmi.value = Number(item.value);
               } else if (item.type === 'blood-pressure' && item.value) {
                 const [systolic, diastolic] = String(item.value).split('/').map(Number);
                 newHealthData.vitals.bloodPressure.value = { systolic, diastolic };

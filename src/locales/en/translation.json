@@ -37,26 +37,10 @@
     },
     "general": {
       "title": "General Health Information",
-      "bloodType": {
-        "title": "Blood Type",
-        "current": "Current Blood Type",
-        "noData": "No blood type recorded",
-        "select": "Select Blood Type"
-      },
-      "healthConditions": {
-        "title": "Health Conditions",
-        "add": "Add Health Condition",
-        "edit": "Edit Health Condition",
-        "list": "Health Conditions List",
-        "noData": "No health conditions recorded"
-      },
-      "familyHistory": {
-        "title": "Family Medical History",
-        "add": "Add Family History",
-        "edit": "Edit Family History",
-        "list": "Family History List",
-        "noData": "No family history recorded"
-      }
+      "bloodType": "Blood Type",
+      "healthConditions": "Health Conditions",
+      "familyHistory": "Family Medical History",
+      "healthCenters": "Assigned Health Center"
     }
   },
   "actions": {
@@ -99,60 +83,6 @@
     "text": "Loading"
   },
   "vitals": {
-    "title": {
-      "bmi": "Body Mass Index",
-      "blood-pressure": "Blood Pressure",
-      "blood-glucose": "Blood Glucose",
-      "waist": "Waist Circumference",
-      "weight": "Weight",
-      "height": "Height"
-    },
-    "form": {
-      "currentValue": "Current Value",
-      "lastUpdate": "Last update",
-      "noValue": "No value recorded",
-      "addMeasurement": "Add Measurement",
-      "updateMeasurement": "Update Measurement",
-      "measurementDate": "Measurement Date",
-      "previousHistory": "Previous History",
-      "noHistory": "No previous measurements",
-      "isFasting": {
-        "label": "Measurement Type",
-        "fasting": "Fasting",
-        "nonFasting": "Non-fasting"
-      }
-    },
-    "fields": {
-      "weight": {
-        "label": "Weight (kg)",
-        "placeholder": "Enter weight in kilograms"
-      },
-      "height": {
-        "label": "Height (cm)",
-        "placeholder": "Enter height in centimeters"
-      },
-      "systolic": {
-        "label": "Systolic (Upper)",
-        "placeholder": "Enter systolic pressure"
-      },
-      "diastolic": {
-        "label": "Diastolic (Lower)",
-        "placeholder": "Enter diastolic pressure"
-      },
-      "glucose": {
-        "label": "Blood Glucose Level (mg/dl)",
-        "placeholder": "Enter blood glucose level"
-      },
-      "waist": {
-        "label": "Waist Circumference (cm)",
-        "placeholder": "Enter waist circumference"
-      }
-    },
-    "validation": {
-      "required": "This field is required",
-      "numberRange": "Please enter a value between {{min}} and {{max}}",
-      "systolicDiastolic": "Systolic must be higher than diastolic"
-    },
     "errors": {
       "weightHeightRequired": "Please enter weight and height",
       "bloodPressureRequired": "Please enter blood pressure values",
@@ -169,162 +99,13 @@
       "bmi": "BMI",
       "bloodPressure": "Blood Pressure",
       "bloodGlucose": "Blood Glucose",
-      "waist": "Waist Circumference",
-      "systolic": "Systolic",
-      "diastolic": "Diastolic",
-      "date": "Measurement Date",
-      "value": "Value"
+      "waist": "Waist Circumference"
     },
     "units": {
       "kg": "kg",
       "cm": "cm",
       "mmHg": "mmHg",
-      "mgdl": "mg/dl",
-      "bmi": "kg/m²",
-      "blood-pressure": "mmHg",
-      "blood-glucose": "mg/dl"
-    },
-    "actions": {
-      "save": "Save",
-      "cancel": "Cancel",
-      "edit": "Edit",
-      "addNew": "Add New Measurement"
-    },
-    "messages": {
-      "success": "Measurement saved successfully",
-      "error": "Failed to save measurement"
-    },
-    "status": {
-      "latest": "Latest measurement",
-      "loading": "Loading measurements...",
-      "saving": "Saving...",
-      "success": "Data updated successfully"
-    }
-  },
-  "healthCenter": {
-    "distance": "{{distance}} km",
-    "workingHours": "Working Hours",
-    "phone": "Phone Number",
-    "availableServices": "Available Services",
-    "assignedMessage": "This is your assigned health center based on your registered address",
-    "services": {
-      "emergency": "Emergency",
-      "outpatient": "Outpatient Clinics",
-      "xray": "X-Ray",
-      "familyMedicine": "Family Medicine",
-      "laboratory": "Laboratory",
-      "pharmacy": "Pharmacy"
-    }
-  },
-  "generalHealth": {
-    "success": {
-      "update": "Data updated successfully",
-      "delete": "Item deleted successfully"
-    },
-    "errors": {
-      "updateFailed": "Failed to update data",
-      "deleteFailed": "Failed to delete item",
-      "unexpected": "An unexpected error occurred"
-    },
-    "familyHistory": {
-      "relations": {
-        "father": "Father",
-        "mother": "Mother",
-        "brother": "Brother",
-        "sister": "Sister",
-        "grandfather": "Grandfather",
-        "grandmother": "Grandmother",
-        "uncle": "Uncle",
-        "aunt": "Aunt",
-        "cousin": "Cousin",
-        "other": "Other"
-      },
-      "labels": {
-        "name": "Condition Name",
-        "relation": "Relation",
-        "date": "Date Identified"
-      },
-      "placeholders": {
-        "name": "Enter condition name",
-        "relation": "Select relation"
-      }
-    },
-    "health-conditions": {
-      "addTitle": "Add Health Condition",
-      "editTitle": "Edit Health Condition",
-      "labels": {
-        "name": "Condition Name"
-      },
-      "placeholders": {
-        "name": "Enter condition name"
-      },
-      "noData": "No health conditions recorded"
-    },
-    "family-history": {
-      "addTitle": "Add Family History",
-      "editTitle": "Edit Family History",
-      "labels": {
-        "name": "Condition Name",
-        "relation": "Relation"
-      },
-      "placeholders": {
-        "name": "Enter condition name",
-        "relation": "Select relation"
-      },
-      "relations": {
-        "father": "Father",
-        "mother": "Mother",
-        "brother": "Brother",
-        "sister": "Sister",
-        "grandfather": "Grandfather",
-        "grandmother": "Grandmother",
-        "uncle": "Uncle",
-        "aunt": "Aunt",
-        "cousin": "Cousin",
-        "other": "Other"
-      },
-      "noData": "No family history recorded"
-    },
-    "dateRecorded": "Date Recorded",
-    "sectionTitles": {
-      "bloodType": "Blood Type",
-      "healthConditions": "Health Conditions",
-      "familyHistory": "Family Medical History",
-      "blood-type": "Blood Type",
-      "health-conditions": "Health Conditions",
-      "family-history": "Family Medical History"
-    },
-    "blood-type": {
-      "title": "Blood Type",
-      "current": "Current Blood Type",
-      "select": "Select Blood Type",
-      "noData": "No blood type recorded",
-      "addTitle": "Add Blood Type",
-      "editTitle": "Edit Blood Type"
-    },
-    "sections": {
-      "blood-type": {
-        "title": "Blood Type",
-        "sectionTitle": "Blood Type Section"
-      },
-      "health-conditions": {
-        "title": "Health Conditions",
-        "sectionTitle": "Health Conditions Section"
-      },
-      "family-history": {
-        "title": "Family Medical History",
-        "sectionTitle": "Family Medical History Section"
-      }
-    }
-  },
-  "dashboard": {
-    "welcome": "Welcome, {{name}}"
-  },
-  "validation": {
-    "required": {
-      "bloodType": "Please select blood type",
-      "name": "Please enter a name",
-      "relation": "Please select relation"
+      "mgdl": "mg/dl"
     }
   }
 }

@@ -226,6 +226,7 @@ const Dashboard: React.FC = () => {
               {userName}
             </h2>
             <p className="text-gray-600 dark:text-gray-300 transition-colors">
+              {userName}
               {userBirthDate && `${calculateAge(userBirthDate)} ${t("profile.age")}`}
             </p>
 

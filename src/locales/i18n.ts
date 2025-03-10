@@ -54,13 +54,14 @@ const detectLanguageFromTWK = async () => {
     }
   } catch (error) {
     console.error('Error detecting language from TWK:', error);
-    // Fallback to stored language
-    const storedLanguage = localStorage.getItem('language');
-    if (storedLanguage && storedLanguage in resources) {
-      i18n.changeLanguage(storedLanguage);
-      document.documentElement.dir = storedLanguage === 'ar' ? 'rtl' : 'ltr';
-    }
   }
+  
+  // Fallback to browser or localStorage if TWK fails
+const storedLanguage = localStorage.getItem('language');
+if (storedLanguage && storedLanguage in resources && i18n.language !== storedLanguage) {
+  i18n.changeLanguage(storedLanguage);
+  document.documentElement.dir = storedLanguage === 'ar' ? 'rtl' : 'ltr';
+}
 };
 
 // Detect language on initialization
