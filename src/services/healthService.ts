@@ -118,41 +118,13 @@ export const calculateBMI = (weight: number, height: number): number | null => {
  */
 export const getBMICategory = (bmi: number) => {
   if (bmi < 18.5) {
-    return {
-      category: "نقص في الوزن",
-      color: "blue",
-      description: "مؤشر كتلة الجسم أقل من الطبيعي",
-    };
+    return { category: 'underweight', color: 'warning' };
   } else if (bmi >= 18.5 && bmi < 25) {
-    return {
-      category: "وزن طبيعي",
-      color: "green",
-      description: "مؤشر كتلة الجسم ضمن المعدل الطبيعي",
-    };
+    return { category: 'normal', color: 'success' };
   } else if (bmi >= 25 && bmi < 30) {
-    return {
-      category: "زيادة في الوزن",
-      color: "yellow",
-      description: "مؤشر كتلة الجسم أعلى من الطبيعي",
-    };
-  } else if (bmi >= 30 && bmi < 35) {
-    return {
-      category: "سمنة درجة أولى",
-      color: "orange",
-      description: "سمنة ذات خطورة معتدلة",
-    };
-  } else if (bmi >= 35 && bmi < 40) {
-    return {
-      category: "سمنة درجة ثانية",
-      color: "orange-dark",
-      description: "سمنة ذات خطورة عالية",
-    };
+    return { category: 'overweight', color: 'warning' };
   } else {
-    return {
-      category: "سمنة درجة ثالثة",
-      color: "red",
-      description: "سمنة ذات خطورة شديدة",
-    };
+    return { category: 'obese', color: 'error' };
   }
 };
 
@@ -166,52 +138,16 @@ interface BloodPressure {
   diastolic: number;
 }
 
-export const getBloodPressureCategory = (bp: BloodPressure) => {
-  const { systolic, diastolic } = bp;
-
-  if (systolic < 120 && diastolic < 80) {
-    return {
-      category: "طبيعي",
-      color: "green",
-      description: "ضغط الدم ضمن المعدل الطبيعي",
-    };
-  } else if (systolic >= 120 && systolic <= 129 && diastolic < 80) {
-    return {
-      category: "مرتفع",
-      color: "yellow",
-      description: "ارتفاع طفيف في ضغط الدم",
-    };
-  } else if (
-    (systolic >= 130 && systolic <= 139) ||
-    (diastolic >= 80 && diastolic <= 89)
-  ) {
-    return {
-      category: "ارتفاع المرحلة الأولى",
-      color: "orange",
-      description: "ارتفاع في ضغط الدم (المرحلة الأولى)",
-    };
-  } else if (
-    (systolic >= 140 && systolic <= 180) ||
-    (diastolic >= 90 && diastolic <= 120)
-  ) {
-    return {
-      category: "ارتفاع المرحلة الثانية",
-      color: "red",
-      description: "ارتفاع في ضغط الدم (المرحلة الثانية)",
-    };
-  } else if (systolic > 180 || diastolic > 120) {
-    return {
-      category: "أزمة ارتفاع ضغط الدم",
-      color: "dark-red",
-      description: "حالة طارئة - يرجى مراجعة الطبيب فوراً",
-    };
+export const getBloodPressureCategory = (data: { systolic: number; diastolic: number }) => {
+  if (data.systolic < 120 && data.diastolic < 80) {
+    return { category: 'normal', color: 'success' };
+  } else if (data.systolic >= 120 && data.systolic < 130 && data.diastolic < 80) {
+    return { category: 'elevated', color: 'warning' };
+  } else if ((data.systolic >= 130 && data.systolic < 140) || (data.diastolic >= 80 && data.diastolic < 90)) {
+    return { category: 'stage1', color: 'warning' };
+  } else {
+    return { category: 'stage2', color: 'error' };
   }
-
-  return {
-    category: "غير محدد",
-    color: "gray",
-    description: "لا يمكن تحديد الفئة بناءً على القيم المدخلة",
-  };
 };
 
 /**

@@ -7,25 +7,16 @@ import { GeneralHealthFormSkeleton } from "../common/skeletons";
 import { apiService } from "../../services/api/apiService";
 import { useTranslation } from "react-i18next";
 import { FamilyRelation } from "../../types/generalHealth";
+import { SectionHeader } from '../common/ui/SectionHeader';
+import { Alert } from '../common/ui/Alert';
+import { StatusIndicator } from '../common/ui/StatusIndicator';
+import { colors } from '../../styles/colors';
 
 interface GeneralHealthFormProps {
   type?: string;
   title?: string;
 }
 
-const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-const FAMILY_RELATIONS: FamilyRelation[] = [
-  "father",
-  "mother",
-  "brother",
-  "sister",
-  "grandfather",
-  "grandmother",
-  "uncle",
-  "aunt",
-  "cousin",
-  "other",
-];
 
 const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
   type: propType,

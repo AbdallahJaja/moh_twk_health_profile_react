@@ -12,23 +12,26 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight, 
-  AlertTriangle
+  AlertTriangle,
+  Search,
+  Info
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../../context/LanguageContext";
 import { AllergiesFormSkeleton } from '../common/skeletons';
 import { ConfirmDialog } from '../common/ConfirmDialog';
+import { SectionHeader } from '../common/ui/SectionHeader';
+import { Alert } from '../common/ui/Alert';
+import { colors } from '../../styles/colors';
 
 interface AllergiesFormProps {
   type?: string;
   title?: string;
 }
 
-const severityOptions = [
-  { id: "mild", labelKey: "allergies.severity.mild", color: "yellow" },
-  { id: "moderate", labelKey: "allergies.severity.moderate", color: "orange" },
-  { id: "severe", labelKey: "allergies.severity.severe", color: "red" },
-];
+// Replace with a type-safe constant
+const SEVERITY_LEVELS = ['mild', 'moderate', 'severe'] as const;
+type SeverityLevel = typeof SEVERITY_LEVELS[number];
 
 const getSeverityStyles = (severity: string): string => {
   switch (severity) {
@@ -89,9 +92,7 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
   const getSuggestions = (): string[] => {
     try {
       const suggestions = t(`allergies.suggestions.${type}`, { returnObjects: true });
-      return Array.isArray(suggestions)
-        ? suggestions.filter((item): item is string => typeof item === 'string')
-        : [];
+      return Array.isArray(suggestions) ? suggestions : [];
     } catch {
       return [];
     }
@@ -151,7 +152,7 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
       }
 
       if (!type) {
-        setFormError(t('validation.required.type'));
+        setFormError(t('validation.required.allergyType'));
         return;
       }
 
@@ -171,12 +172,12 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
 
       // Update context data
       if (!type) {
-        setFormError("نوع الحساسية غير محدد");
+        setFormError(t('validation.required.allergyType'));
         return;
       }
 
       if (!type) {
-        setFormError("نوع الحساسية غير محدد");
+        setFormError(t('validation.required.allergyType'));
         return;
       }
   
@@ -217,7 +218,7 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
     }
 
     if (!type) {
-      setFormError(t('validation.required.type'));
+      setFormError(t('validation.required.allergyType'));
       return;
     }
 
@@ -239,7 +240,7 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
 
     // Update context data
     if (!type) {
-      setFormError("نوع الحساسية غير محدد");
+      setFormError(t('validation.required.allergyType'));
       return;
     }
 
@@ -323,97 +324,68 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
   // Render list view
   const renderListView = () => (
     <div>
-      {/* Header with add button */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-          {t(`allergies.types.${type}.title`)}
-        </h2>
-        <button
-          onClick={() => setMode("add")}
-          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md 
-                   flex items-center transition-colors disabled:opacity-50"
-          disabled={type === "doctor"}
-        >
-          <Plus size={16} className="rtl:ml-2 ltr:mr-2" />
-          {t('allergies.actions.add')}
-        </button>
-      </div>
+      <SectionHeader 
+        title={t(`allergies.types.${type}.title`)}
+        action={
+          <button
+            onClick={() => setMode("add")}
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white 
+                     rounded-md flex items-center transition-colors 
+                     disabled:opacity-50"
+            disabled={type === "doctor"}
+          >
+            <Plus size={16} className="rtl:ml-2 ltr:mr-2" />
+            {t('allergies.actions.add')}
+          </button>
+        }
+      />
 
-      {/* Success message */}
       {formSuccess && (
-        <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 text-green-700 
-                      dark:text-green-300 rounded-md flex items-center">
-          <Check size={16} className="rtl:ml-2 ltr:mr-2" />
-          {formSuccess}
-        </div>
+        <Alert type="success" message={formSuccess} />
       )}
 
-      {/* Empty state */}
       {allergies.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-          <Heart size={40} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
-          <p className="text-gray-500 dark:text-gray-400">
-            {t('allergies.noData')}
+        <div className={`
+          text-center py-10 ${colors.background.secondary} rounded-lg
+        `}>
+          <Search size={40} className={`mx-auto ${colors.text.tertiary} mb-3`} />
+          <p className={colors.text.secondary}>
+            {t('allergies.list.empty')}
           </p>
-          {type !== "doctor" && (
-            <button
-              onClick={() => setMode("add")}
-              className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white 
-                       rounded-md inline-flex items-center transition-colors"
-            >
-              <Plus size={16} className="rtl:ml-2 ltr:mr-2" />
-              {t('allergies.actions.add')}
-            </button>
-          )}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {allergies.map((allergy) => (
             <div
               key={allergy.id}
-              className="p-4 bg-white dark:bg-gray-700 rounded-lg shadow-sm 
-                       border border-gray-200 dark:border-gray-600"
+              className={`
+                p-4 rounded-lg shadow-sm border
+                ${colors.background.primary}
+                ${colors.border.primary}
+                transition-all duration-200
+              `}
             >
-              <div className="flex justify-between">
+              <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">
+                  <h3 className={`font-medium ${colors.text.primary}`}>
                     {allergy.name}
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('allergies.dateRecorded')}: {formatDate(allergy.date)}
+                  <p className={`mt-1 ${colors.text.secondary}`}>
+                    {t(`allergies.severity.${allergy.severity}`)}
+                  </p>
+                  <p className={`text-sm ${colors.text.tertiary}`}>
+                    {formatDate(allergy.date)}
                   </p>
                 </div>
-                <div className="flex items-center">
-                  <span className={`
-                    px-2 py-1 text-xs rounded-full rtl:ml-2 ltr:mr-2
-                    ${getSeverityStyles(allergy.severity)}
-                  `}>
-                    {t(`allergies.severity.${allergy.severity}`)}
-                  </span>
-
-                  {type !== "doctor" && (
-                    <div className="flex rtl:space-x-reverse space-x-2">
-                      <button
-                        onClick={() => handleEditAllergy(allergy)}
-                        className="p-1 text-blue-500 hover:text-blue-700 
-                                 dark:text-blue-400 dark:hover:text-blue-300
-                                 transition-colors"
-                      >
-                        <Edit2 size={16} />
-                        <span className="sr-only">{t('actions.edit')}</span>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(allergy.id)}
-                        className="p-1 text-red-500 hover:text-red-700
-                                 dark:text-red-400 dark:hover:text-red-300
-                                 transition-colors"
-                      >
-                        <Trash2 size={16} />
-                        <span className="sr-only">{t('actions.delete')}</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
+                {type !== "doctor" && (
+                  <button
+                    onClick={() => handleEditAllergy(allergy)}
+                    className={`p-2 rounded-full hover:${colors.background.tertiary} 
+                             ${colors.text.tertiary} transition-colors`}
+                  >
+                    <Info size={16} />
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -425,139 +397,119 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
   // Render add/edit form
   const renderForm = () => (
     <div>
-      {/* Header with back button */}
-      <div className="flex items-center mb-6">
-        <button
-          onClick={() => {
-            setMode("list");
-            setSelectedAllergy(null);
-            setAllergyName("");
-            setSeverity("");
-            setFormError(null);
-          }}
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 
-                   text-gray-400 dark:text-gray-200 transition-colors"
-        >
-          {direction === 'rtl' ? <ArrowRight size={20} /> : <ArrowLeft size={20} />}
-        </button>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white rtl:mr-2 ltr:ml-2">
-          {mode === "add" 
-            ? t('allergies.form.addTitle') 
-            : t('allergies.form.editTitle')}
-        </h2>
-      </div>
+      <SectionHeader 
+        title={mode === "add" 
+          ? t('allergies.form.addTitle') 
+          : t('allergies.form.editTitle')}
+        back={() => {
+          setMode("list");
+          setSelectedAllergy(null);
+          setAllergyName("");
+          setSeverity("");
+          setFormError(null);
+        }}
+      />
 
-      {/* Error message */}
       {formError && (
-        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-700 
-                       dark:text-red-300 rounded-md flex items-center">
-          <AlertTriangle size={16} className="rtl:ml-2 ltr:mr-2" />
-          {t(`validation.${formError}`)}
-        </div>
+        <Alert type="error" message={formError} />
       )}
 
-      {/* Search box with suggestions */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {t('allergies.form.nameLabel')}
-        </label>
-        <div className="relative">
-          <input
-            type="text"
-            value={allergyName}
-            onChange={(e) => {
-              setAllergyName(e.target.value);
-              handleSuggestionFilter(e.target.value);
-            }}
-            onFocus={() => handleSuggestionFilter(allergyName)}
-            onBlur={() => {
-              // Delay hiding suggestions to allow clicking them
-              setTimeout(() => setShowSuggestions(false), 200);
-            }}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white 
-                       rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-            placeholder={t(`allergies.types.${type}.placeholder`)}
-          />
-          
-          {/* Suggestions dropdown */}
-          {showSuggestions && filteredSuggestions.length > 0 && (
-            <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 
-                           border border-gray-200 dark:border-gray-600 rounded-md 
-                           shadow-lg max-h-60 overflow-auto">
-              {filteredSuggestions.map((suggestion, index) => (
-                <button
-                  key={index}
-                  className="w-full px-4 py-2 text-left text-gray-900 dark:text-white 
-                           hover:bg-gray-100 dark:hover:bg-gray-600 
-                           focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-600"
-                  onMouseDown={() => handleSuggestionSelect(suggestion)}
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Severity selection */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {t('allergies.severity.label')}
-        </label>
-        <div className="space-y-2">
-          {severityOptions.map((option) => (
-            <div
-              key={option.id}
+      <div className="space-y-6">
+        <div>
+          <label className={`block text-sm font-medium ${colors.text.secondary} mb-1`}>
+            {t('allergies.form.nameLabel')}
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              value={allergyName}
+              onChange={(e) => {
+                setAllergyName(e.target.value);
+                handleSuggestionFilter(e.target.value);
+              }}
+              onFocus={() => handleSuggestionFilter(allergyName)}
+              onBlur={() => {
+                // Delay hiding suggestions to allow clicking them
+                setTimeout(() => setShowSuggestions(false), 200);
+              }}
               className={`
-                p-3 border rounded-md cursor-pointer flex items-center
-                transition-colors
-                ${
-                  severity === option.id
-                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-400"
-                    : "border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }
+                w-full px-3 py-2 rounded-md
+                ${colors.background.primary}
+                ${colors.text.primary}
+                ${colors.border.primary}
+                border focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                transition-colors duration-200
               `}
-              onClick={() => setSeverity(option.id)}
-            >
-              <div
-                className={`
-                w-5 h-5 rounded-full flex items-center justify-center 
-                transition-colors
-                ${
-                  severity === option.id
-                    ? "bg-blue-500 dark:bg-blue-400"
-                    : "border border-gray-300 dark:border-gray-500"
-                }
-              `}
-              >
-                {severity === option.id && (
-                  <Check size={12} className="text-white" />
-                )}
+              placeholder={t(`allergies.types.${type}.placeholder`)}
+            />
+            {/* Suggestions dropdown */}
+            {showSuggestions && filteredSuggestions.length > 0 && (
+              <div className={`
+                absolute z-50 w-full mt-1 rounded-md shadow-lg
+                ${colors.background.primary}
+                ${colors.border.primary}
+                border max-h-60 overflow-auto
+              `}>
+                {filteredSuggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    className={`
+                      w-full px-4 py-2 text-left
+                      ${colors.text.primary}
+                      hover:${colors.background.secondary}
+                      focus:${colors.background.secondary}
+                      focus:outline-none
+                      transition-colors duration-200
+                    `}
+                    onMouseDown={() => handleSelectSuggestion(suggestion)}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
               </div>
-              <span className="rtl:mr-2 ltr:ml-2 text-gray-900 dark:text-white">
-                {t(option.labelKey)}
-              </span>
-            </div>
-          ))}
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Submit button */}
-      <div className="flex justify-end">
-        <button
-          onClick={mode === "add" ? handleAddAllergy : handleUpdateAllergy}
-          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md
-                     transition-colors disabled:opacity-50"
-          disabled={isLoading}
-        >
-          {isLoading 
-            ? t('actions.saving') 
-            : mode === "add" 
-              ? t('actions.add') 
-              : t('actions.update')}
-        </button>
+        <div>
+          <label className={`block text-sm font-medium ${colors.text.secondary} mb-1`}>
+            {t('allergies.form.severityLabel')}
+          </label>
+          <select
+            value={severity}
+            onChange={(e) => setSeverity(e.target.value as SeverityLevel)}
+            className={`
+              w-full px-3 py-2 rounded-md
+              ${colors.background.primary}
+              ${colors.text.primary}
+              ${colors.border.primary}
+              border focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+              transition-colors duration-200
+            `}
+          >
+            <option value="">{t('allergies.form.selectSeverity')}</option>
+            {SEVERITY_LEVELS.map((level) => (
+              <option key={level} value={level}>
+                {t(`allergies.severity.${level}`)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex justify-end space-x-4 rtl:space-x-reverse">
+          <button
+            onClick={mode === "add" ? handleAddAllergy : handleUpdateAllergy}
+            disabled={isSubmitting}
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white 
+                     rounded-md transition-colors disabled:opacity-50"
+          >
+            {isSubmitting 
+              ? t('actions.saving') 
+              : mode === "add" 
+                ? t('actions.add') 
+                : t('actions.update')}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -106,7 +106,135 @@
       "kg": "kg",
       "cm": "cm",
       "mmHg": "mmHg",
-      "mgdl": "mg/dl"
+      "mgdl": "mg/dl",
+      "bmi": "kg/m²",
+      "blood-pressure": "mmHg",
+      "blood-glucose": "mg/dL",
+      "waist": "cm",
+      "weight": "kg",
+      "height": "cm"
+    },
+    "types": {
+      "bmi": "BMI",
+      "blood-pressure": "Blood Pressure",
+      "blood-glucose": "Blood Glucose",
+      "waist": "Waist Circumference",
+      "weight": "Weight",
+      "height": "Height"
+    },
+    "form": {
+      "addTitle": "Add {{type}} Measurement",
+      "editTitle": "Edit {{type}} Measurement",
+      "currentValue": "Current Value",
+      "noValue": "No measurement recorded",
+      "addMeasurement": "Add Measurement",
+      "previousHistory": "View History",
+      "lastUpdate": "Last updated",
+      "additionalInfo": "Additional Information"
+    },
+    "bmi": {
+      "weight": {
+        "label": "Weight (kg)",
+        "placeholder": "Enter weight",
+        "error": "Please enter a valid weight (1-500 kg)"
+      },
+      "height": {
+        "label": "Height (cm)",
+        "placeholder": "Enter height",
+        "error": "Please enter a valid height (1-300 cm)"
+      },
+      "info": {
+        "description": "Body Mass Index (BMI) is a measure of body fat based on height and weight.",
+        "categories": {
+          "underweight": "Underweight: Less than 18.5",
+          "normal": "Normal Weight: 18.5 - 24.9",
+          "overweight": "Overweight: 25 - 29.9",
+          "obese": "Obese: 30 or higher"
+        }
+      }
+    },
+    "blood-pressure": {
+      "systolic": {
+        "label": "Systolic (mmHg)",
+        "placeholder": "Enter systolic value",
+        "error": "Please enter a valid systolic value (70-250)"
+      },
+      "diastolic": {
+        "label": "Diastolic (mmHg)",
+        "placeholder": "Enter diastolic value",
+        "error": "Please enter a valid diastolic value (40-150)"
+      },
+      "info": {
+        "description": "Blood pressure is measured with two numbers: systolic (upper) and diastolic (lower) pressure.",
+        "categories": {
+          "normal": "Normal: Less than 120/80",
+          "elevated": "Elevated: 120-129/less than 80",
+          "stage1": "Stage 1: 130-139/80-89",
+          "stage2": "Stage 2: 140 or higher/90 or higher"
+        }
+      }
+    },
+    "blood-glucose": {
+      "value": {
+        "label": "Blood Glucose (mg/dL)",
+        "placeholder": "Enter blood glucose value",
+        "error": "Please enter a valid glucose value (20-600)"
+      },
+      "info": {
+        "description": "Blood glucose is typically measured in fasting or random state.",
+        "categories": {
+          "low": "Low: Less than 70 mg/dL",
+          "normal": "Normal (fasting): 70-99 mg/dL",
+          "pre-diabetic": "Pre-diabetic (fasting): 100-125 mg/dL",
+          "high": "High (fasting): 126 mg/dL or higher"
+        }
+      }
+    },
+    "validation": {
+      "required": {
+        "weight": "Please enter weight",
+        "height": "Please enter height",
+        "systolic": "Please enter systolic pressure",
+        "diastolic": "Please enter diastolic pressure",
+        "glucose": "Please enter blood glucose value"
+      },
+      "range": {
+        "weight": "Please enter a valid weight (1-500 kg)",
+        "height": "Please enter a valid height (1-300 cm)",
+        "systolic": "Please enter a valid systolic value (70-250)",
+        "diastolic": "Please enter a valid diastolic value (40-150)",
+        "glucose": "Please enter a valid glucose value (20-600 mg/dL)"
+      },
+      "comparison": {
+        "bloodPressure": "Diastolic pressure must be lower than systolic"
+      }
+    },
+    "history": {
+      "title": "Previous Measurements",
+      "noData": "No previous measurements",
+      "latestMeasurement": "Latest measurement"
+    },
+    "status": {
+      "bmi": {
+        "normal": "Normal Weight",
+        "normal.description": "Your BMI is within the healthy range",
+        "overweight": "Overweight",
+        "overweight.description": "Your BMI indicates overweight",
+        "underweight": "Underweight",
+        "underweight.description": "Your BMI indicates underweight",
+        "obese": "Obese",
+        "obese.description": "Your BMI indicates obesity"
+      },
+      "blood-pressure": {
+        "normal": "Normal",
+        "normal.description": "Your blood pressure is within normal range",
+        "elevated": "Elevated",
+        "elevated.description": "Your blood pressure is slightly elevated",
+        "stage1": "Stage 1 Hypertension",
+        "stage1.description": "Your blood pressure indicates stage 1 hypertension",
+        "stage2": "Stage 2 Hypertension",
+        "stage2.description": "Your blood pressure indicates stage 2 hypertension"
+      }
     }
   },
   "allergies": {
@@ -145,7 +273,8 @@
       "addTitle": "Add New Allergy",
       "editTitle": "Edit Allergy",
       "nameLabel": "Allergy Name",
-      "severityLabel": "Severity"
+       "severityLabel": "Severity",
+      "selectSeverity": "Select Severity"
     },
     "noData": "No allergies recorded",
     "dateRecorded": "Date Recorded",
@@ -196,11 +325,186 @@
   },
    "validation": {
     "required": {
-        "name": "Please enter allergy name",
-        "severity": "Please select severity"
+      "allergyType": "Allergy type is required",
+      "name": "Please enter allergy name",
+      "severity": "Please select severity",
+      "type": "Please select allergy type"
     }
   },
   "common": {
-    "notAvailable": "غير متوفر"
+    "notAvailable": "Not available"
+  },
+  "history": {
+    "title": "Previous Measurements",
+    "noData": "No previous measurements",
+    "latestMeasurement": "Latest measurement"
+  },
+  "medications": {
+    "types": {
+      "current": {
+        "title": "Current Medications",
+        "empty": "No current medications",
+        "status": "Active"
+      },
+      "previous": {
+        "title": "Previous Medications",
+        "empty": "No previous medications",
+        "status": "Completed"
+      }
+    },
+    "details": {
+      "dose": "Dose",
+      "frequency": "Frequency",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "duration": "Duration",
+      "doctor": "Prescribed By",
+      "notes": "Important Notes"
+    },
+    "form": {
+      "addTitle": "Add New Medication",
+      "editTitle": "Edit Medication",
+      "nameLabel": "Medication Name",
+      "dosageLabel": "Dosage",
+      "frequencyLabel": "Frequency",
+      "startDateLabel": "Start Date",
+      "endDateLabel": "End Date",
+      "notesLabel": "Notes",
+      "prescribedByLabel": "Prescribed By",
+      "statusLabel": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "discontinued": "Discontinued"
+    },
+    "frequency": {
+      "daily": "Daily",
+      "twice": "Twice daily",
+      "thrice": "Three times daily",
+      "weekly": "Weekly",
+      "asNeeded": "As needed",
+      "once": "Once daily"
+    },
+    "validation": {
+      "required": {
+        "name": "Please enter medication name",
+        "dosage": "Please enter dosage",
+        "frequency": "Please select frequency",
+        "startDate": "Please select start date"
+      }
+    },
+    "success": {
+      "add": "Medication added successfully",
+      "update": "Medication updated successfully",
+      "delete": "Medication deleted successfully"
+    }
+  },
+  "generalHealth": {
+    "types": {
+      "bloodType": {
+        "title": "Blood Type",
+        "empty": "Blood type not recorded",
+        "description": "Your blood type",
+        "info": {
+          "title": "Blood Type Information",
+          "description": "Knowing your blood type is essential for medical emergencies and blood transfusions"
+        },
+        "select": "Select Blood Type",
+        "current": "Current Blood Type"
+      },
+      "familyHistory": {
+        "title": "Family Medical History",
+        "empty": "No family history recorded",
+        "relations": {
+          "father": "Father",
+          "mother": "Mother",
+          "sibling": "Sibling",
+          "grandparent": "Grandparent"
+        },
+        "addTitle": "Add Family History",
+        "editTitle": "Edit Family History",
+        "name": "Disease Name",
+        "relation": "Relation",
+        "placeholder": {
+          "name": "Enter disease name",
+          "relation": "e.g. Father, Mother, Grandfather"
+        },
+        "fields": {
+          "condition": "Medical Condition",
+          "relation": "Family Relation",
+          "date": "Record Date"
+        }
+      },
+      "conditions": {
+        "title": "Medical Conditions",
+        "empty": "No medical conditions recorded",
+        "status": {
+          "active": "Active",
+          "resolved": "Resolved",
+          "unknown": "Unknown"
+        }
+      },
+      "healthConditions": {
+        "title": "Health Conditions",
+        "empty": "No health conditions recorded",
+        "addTitle": "Add Health Condition",
+        "editTitle": "Edit Health Condition",
+        "name": "Condition Name",
+        "placeholder": "Enter condition name",
+        "fields": {
+          "name": "Condition Name",
+          "date": "Diagnosis Date",
+          "status": "Current Status"
+        }
+      }
+    },
+    "bloodTypes": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+    "form": {
+      "addTitle": "Add Medical History",
+      "editTitle": "Edit Medical History",
+      "fields": {
+        "condition": "Condition",
+        "relation": "Relation",
+        "notes": "Additional Notes",
+        "diagnosisDate": "Diagnosis Date",
+        "status": "Current Status",
+        "selectBloodType": "Select Blood Type"
+      },
+      "placeholders": {
+        "condition": "Enter medical condition",
+        "selectRelation": "Select family member",
+        "notes": "Enter any additional notes"
+      },
+      "loading": "Processing data...",
+      "recordDate": "Record Date",
+      "buttons": {
+        "save": "Save",
+        "update": "Update",
+        "add": "Add",
+        "cancel": "Cancel"
+      }
+    },
+    "success": {
+      "add": "Medical history added successfully",
+      "update": "Medical history updated successfully",
+      "delete": "Medical history deleted successfully"
+    },
+    "actions": {
+      "add": "Add",
+      "edit": "Edit",
+      "delete": "Delete",
+      "update": "Update",
+      "save": "Save",
+      "saving": "Saving...",
+      "cancel": "Cancel"
+    },
+    "validation": {
+      "required": {
+        "bloodType": "Please select a blood type",
+        "condition": "Please enter condition name",
+        "relation": "Please select family relation"
+      }
+    }
   }
 }

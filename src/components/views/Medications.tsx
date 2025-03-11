@@ -1,29 +1,34 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Pill, ArrowRight, AlertTriangle, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../context/LanguageContext';
+import { colors } from '../../styles/colors';
 
 interface MedicationsProps {
   type?: 'current' | 'previous';
 }
 
 const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   const params = useParams<{ type?: string }>();
   
-  // Use prop type or param type
   const type = propType || params.type as 'current' | 'previous';
+  const isCurrentType = type === 'current';
   
   // Sample data for medications
   const [currentMedications] = useState([
     {
       id: 1,
-      name: 'باراسيتامول',
-      dose: '500 ملغ',
-      frequency: '3 مرات يومياً',
+      name: t('medications.names.paracetamol'),
+      dose: '500mg',
+      frequency: 'thrice', // Using key instead of hardcoded Arabic
       startDate: '2025-01-15',
-      duration: '10 أيام',
-      doctor: 'د. أحمد سعيد',
-      notes: 'يؤخذ بعد الطعام'
+      duration: t('medications.duration.days', { count: 10 }), // Using i18n interpolation
+      doctor: 'Dr. Ahmad Saeed',
+      notes: t('medications.notes.afterMeal')
     },
     {
       id: 2,
@@ -70,42 +75,43 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
     }
   ]);
   
-  // Format date to local format
+  // Format date using the current language
   const formatDate = (dateString: string) => {
-    if (!dateString) return 'غير متوفر';
+    if (!dateString) return t('common.notAvailable');
     
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('ar-SA', {
+    return new Intl.DateTimeFormat(language, {
       year: 'numeric',
       month: '2-digit',
-      day: '2-digit'
+      day: '2-digit',
+      calendar: 'gregory'
     }).format(date);
   };
-  
-  const isCurrentType = type === 'current';
+
   const medications = isCurrentType ? currentMedications : previousMedications;
   
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+    <div className={`${colors.background.primary} rounded-lg shadow-sm p-6`}>
       <div className="flex items-center mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-gray-100"
+          className={`p-2 rounded-full hover:${colors.background.secondary} 
+                   ${colors.text.secondary} transition-colors`}
         >
           <ArrowRight size={20} />
         </button>
-        <h2 className="text-xl font-bold mr-2">
-          {isCurrentType ? "الأدوية الحالية" : "الأدوية السابقة"}
+        <h2 className={`text-xl font-bold rtl:mr-2 ltr:ml-2 ${colors.text.primary}`}>
+          {t(`medications.types.${type}.title`)}
         </h2>
       </div>
 
       {medications.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <Pill size={40} className="mx-auto text-gray-300 mb-3" />
-          <p className="text-gray-500">
-            {isCurrentType
-              ? "لا توجد أدوية حالية مسجلة"
-              : "لا توجد أدوية سابقة مسجلة"}
+        <div className={`
+          text-center py-10 ${colors.background.secondary} rounded-lg
+        `}>
+          <Pill size={40} className={`mx-auto ${colors.text.tertiary} mb-3`} />
+          <p className={colors.text.secondary}>
+            {t(`medications.types.${type}.empty`)}
           </p>
         </div>
       ) : (
@@ -113,57 +119,73 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
           {medications.map((med) => (
             <div
               key={med.id}
-              className="bg-white border border-gray-200 rounded-lg p-4"
+              className={`
+                ${colors.background.primary} 
+                ${colors.border.primary}
+                border rounded-lg p-4
+              `}
             >
               <div className="flex justify-between items-start">
-                <h3 className="font-medium">{med.name}</h3>
+                <h3 className={`font-medium ${colors.text.primary}`}>
+                  {med.name}
+                </h3>
                 {isCurrentType && (
-                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
-                    <Clock size={12} className="ml-1" />
-                    نشط
+                  <span className={`
+                    ${colors.status.info.bg} ${colors.status.info.text}
+                    text-xs px-2 py-1 rounded-full flex items-center
+                  `}>
+                    <Clock size={12} className="rtl:ml-1 ltr:mr-1" />
+                    {t('medications.types.current.status')}
                   </span>
                 )}
               </div>
 
               <div className="grid grid-cols-2 gap-2 mt-3">
-                <div>
-                  <span className="text-xs text-gray-500">الجرعة:</span>
-                  <p className="text-sm">{med.dose}</p>
-                </div>
-                <div>
-                  <span className="text-xs text-gray-500">التكرار:</span>
-                  <p className="text-sm">{med.frequency}</p>
-                </div>
-                <div>
-                  <span className="text-xs text-gray-500">تاريخ البدء:</span>
-                  <p className="text-sm">{formatDate(med.startDate)}</p>
-                </div>
-                <div>
-                  <span className="text-xs text-gray-500">
-                    {isCurrentType ? "المدة:" : "تاريخ الانتهاء:"}
-                  </span>
-                  <p className="text-sm">
-                    {"duration" in med ? med.duration : formatDate(med.endDate)}
-                  </p>
-                </div>
+                {[
+                  { key: 'dose', value: med.dose },
+                  { key: 'frequency', value: t(`medications.frequency.${med.frequency}`) },
+                  { key: 'startDate', value: formatDate(med.startDate) },
+                  { 
+                    key: isCurrentType ? 'duration' : 'endDate',
+                    value: isCurrentType ? med.duration : formatDate(med.endDate)
+                  }
+                ].map(({ key, value }) => (
+                  <div key={key}>
+                    <span className={`text-xs ${colors.text.tertiary}`}>
+                      {t(`medications.details.${key}`)}:
+                    </span>
+                    <p className={`text-sm ${colors.text.secondary}`}>
+                      {value}
+                    </p>
+                  </div>
+                ))}
               </div>
 
               <div className="mt-3">
-                <span className="text-xs text-gray-500">الطبيب:</span>
-                <p className="text-sm">{med.doctor}</p>
+                <span className={`text-xs ${colors.text.tertiary}`}>
+                  {t('medications.details.doctor')}:
+                </span>
+                <p className={`text-sm ${colors.text.secondary}`}>
+                  {med.doctor}
+                </p>
               </div>
 
               {med.notes && (
-                <div className="mt-3 bg-yellow-50 p-2 rounded-md text-sm flex items-start">
+                <div className={`
+                  mt-3 ${colors.status.warning.bg} p-2 rounded-md 
+                  text-sm flex items-start
+                `}>
                   <AlertTriangle
                     size={16}
-                    className="text-yellow-500 ml-2 mt-0.5"
+                    className={`${colors.status.warning.text} rtl:ml-2 ltr:mr-2 mt-0.5`}
                   />
                   <div>
-                    <span className="text-xs font-medium text-yellow-700">
-                      ملاحظات:
+                    <span className={`text-xs font-medium ${colors.status.warning.text}`}>
+                      {t('medications.details.notes')}:
                     </span>
-                    <p className="text-yellow-700">{med.notes}</p>
+                    <p className={colors.status.warning.text}>
+                      {med.notes}
+                    </p>
                   </div>
                 </div>
               )}

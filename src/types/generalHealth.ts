@@ -1,5 +1,5 @@
 export interface GeneralHealthData {
-  bloodType: string | null;
+  bloodType: BloodType | null;
   allergies: Allergy[];
   medications: Medication[];
   conditions: Condition[];
@@ -42,6 +42,8 @@ export interface Surgery {
   notes?: string;
 }
 
+export type BloodType = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | 'unknown';
+
 export type FamilyRelation = 
   | 'father'
   | 'mother'
@@ -54,9 +56,22 @@ export type FamilyRelation =
   | 'cousin'
   | 'other';
 
+export type HealthStatus = 'active' | 'resolved' | 'unknown';
+
+export interface HealthCondition {
+  id: number;
+  name: string;
+  status: HealthStatus;
+  date: string;
+  notes?: string;
+}
+
 export interface FamilyHistory {
   id: number;
   name: string;
   relation: FamilyRelation;
   date: string;
+  notes?: string;
 }
+
+export type GeneralHealthType = 'bloodType' | 'healthConditions' | 'familyHistory';
