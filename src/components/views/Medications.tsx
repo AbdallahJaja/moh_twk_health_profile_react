@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Pill, ArrowRight, AlertTriangle, Clock } from 'lucide-react';
+import { Pill, ArrowRight, ArrowLeft, AlertTriangle, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../styles/colors';
@@ -17,6 +17,7 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
   
   const type = propType || params.type as 'current' | 'previous';
   const isCurrentType = type === 'current';
+  const isRTL = language === 'ar';
   
   // Sample data for medications
   const [currentMedications] = useState([
@@ -95,20 +96,31 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
       <div className="flex items-center mb-6">
         <button
           onClick={() => navigate(-1)}
-          className={`p-2 rounded-full hover:${colors.background.secondary} 
-                   ${colors.text.secondary} transition-colors`}
+          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 mx-2 transition-colors"
+          aria-label={t("actions.back")}
         >
-          <ArrowRight size={20} />
+          {isRTL ? (
+            <ArrowRight
+              size={20}
+              className="text-gray-700 dark:text-gray-200"
+            />
+          ) : (
+            <ArrowLeft size={20} className="text-gray-700 dark:text-gray-200" />
+          )}
         </button>
-        <h2 className={`text-xl font-bold rtl:mr-2 ltr:ml-2 ${colors.text.primary}`}>
+        <h2
+          className={`text-xl font-bold rtl:mr-2 ltr:ml-2 ${colors.text.primary}`}
+        >
           {t(`medications.types.${type}.title`)}
         </h2>
       </div>
 
       {medications.length === 0 ? (
-        <div className={`
+        <div
+          className={`
           text-center py-10 ${colors.background.secondary} rounded-lg
-        `}>
+        `}
+        >
           <Pill size={40} className={`mx-auto ${colors.text.tertiary} mb-3`} />
           <p className={colors.text.secondary}>
             {t(`medications.types.${type}.empty`)}
@@ -130,25 +142,32 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
                   {med.name}
                 </h3>
                 {isCurrentType && (
-                  <span className={`
+                  <span
+                    className={`
                     ${colors.status.info.bg} ${colors.status.info.text}
                     text-xs px-2 py-1 rounded-full flex items-center
-                  `}>
+                  `}
+                  >
                     <Clock size={12} className="rtl:ml-1 ltr:mr-1" />
-                    {t('medications.types.current.status')}
+                    {t("medications.types.current.status")}
                   </span>
                 )}
               </div>
 
               <div className="grid grid-cols-2 gap-2 mt-3">
                 {[
-                  { key: 'dose', value: med.dose },
-                  { key: 'frequency', value: t(`medications.frequency.${med.frequency}`) },
-                  { key: 'startDate', value: formatDate(med.startDate) },
-                  { 
-                    key: isCurrentType ? 'duration' : 'endDate',
-                    value: isCurrentType ? med.duration : formatDate(med.endDate)
-                  }
+                  { key: "dose", value: med.dose },
+                  {
+                    key: "frequency",
+                    value: t(`medications.frequency.${med.frequency}`),
+                  },
+                  { key: "startDate", value: formatDate(med.startDate) },
+                  {
+                    key: isCurrentType ? "duration" : "endDate",
+                    value: isCurrentType
+                      ? med.duration
+                      : formatDate(med.endDate),
+                  },
                 ].map(({ key, value }) => (
                   <div key={key}>
                     <span className={`text-xs ${colors.text.tertiary}`}>
@@ -163,7 +182,7 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
 
               <div className="mt-3">
                 <span className={`text-xs ${colors.text.tertiary}`}>
-                  {t('medications.details.doctor')}:
+                  {t("medications.details.doctor")}:
                 </span>
                 <p className={`text-sm ${colors.text.secondary}`}>
                   {med.doctor}
@@ -171,21 +190,23 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
               </div>
 
               {med.notes && (
-                <div className={`
+                <div
+                  className={`
                   mt-3 ${colors.status.warning.bg} p-2 rounded-md 
                   text-sm flex items-start
-                `}>
+                `}
+                >
                   <AlertTriangle
                     size={16}
                     className={`${colors.status.warning.text} rtl:ml-2 ltr:mr-2 mt-0.5`}
                   />
                   <div>
-                    <span className={`text-xs font-medium ${colors.status.warning.text}`}>
-                      {t('medications.details.notes')}:
+                    <span
+                      className={`text-xs font-medium ${colors.status.warning.text}`}
+                    >
+                      {t("medications.details.notes")}:
                     </span>
-                    <p className={colors.status.warning.text}>
-                      {med.notes}
-                    </p>
+                    <p className={colors.status.warning.text}>{med.notes}</p>
                   </div>
                 </div>
               )}

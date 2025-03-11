@@ -237,9 +237,16 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
       setFormSuccess(t("vitals.success.dataDeleted"));
       sessionStorage.removeItem("dashboardData"); // Clear cached data
 
+      setTimeout(() => {
+          // Fade out animation for success message
+          const successElement = document.querySelector(".success-alert");
+          if (successElement) {
+            successElement.classList.add("opacity-0");
+          }
       // Clear success message after delay
       setTimeout(() => {
         setFormSuccess(null);
+      }, 300);
       }, 1500);
     }
 
@@ -426,10 +433,17 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
       // Reset form
       setFormValues({});
 
+      setTimeout(() => {
+          // Fade out animation for success message
+          const successElement = document.querySelector(".success-alert");
+          if (successElement) {
+            successElement.classList.add("opacity-0");
+          }
       // Switch back to view mode after a delay
       setTimeout(() => {
         setMode("view");
         setFormSuccess(null);
+      }, 300);
       }, 1500);
     }
 
@@ -577,11 +591,11 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
             {t("vitals.form.additionalInfo")}
           </h3>
           <p className={colors.text.secondary}>
-            {t("vitals.blood-pressure.info.description")}
+            {t("vitals.bloodPressure.info.description")}
           </p>
           <div className="mt-4 space-y-2">
             {Object.entries(
-              t("vitals.blood-pressure.info.categories", {
+              t("vitals.bloodPressure.info.categories", {
                 returnObjects: true,
               })
             ).map(([key, value]) => (
@@ -599,11 +613,11 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
             {t("vitals.form.additionalInfo")}
           </h3>
           <p className={colors.text.secondary}>
-            {t("vitals.blood-glucose.info.description")}
+            {t("vitals.bloodGlucose.info.description")}
           </p>
           <div className="mt-4 space-y-2">
             {Object.entries(
-              t("vitals.blood-glucose.info.categories", { returnObjects: true })
+              t("vitals.bloodGlucose.info.categories", { returnObjects: true })
             ).map(([key, value]) => (
               <div key={key} className={`text-sm ${colors.text.secondary}`}>
                 {value}
@@ -757,11 +771,11 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
       {type === "weight" && (
         <div className="space-y-6">
           <Input
-            label={t("vitals.weight.label")}
+            label={t("vitals.bmi.weight.label")}
             type="number"
             value={formValues.value || ""}
             onChange={(e) => handleInputChange("value", e.target.value)}
-            placeholder={t("vitals.weight.placeholder")}
+            placeholder={t("vitals.bmi.weight.placeholder")}
             min="1"
             max="500"
             step="0.1"
@@ -773,11 +787,11 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
       {type === "height" && (
         <div className="space-y-6">
           <Input
-            label={t("vitals.height.label")}
+            label={t("vitals.bmi.height.label")}
             type="number"
             value={formValues.value || ""}
             onChange={(e) => handleInputChange("value", e.target.value)}
-            placeholder={t("vitals.height.placeholder")}
+            placeholder={t("vitals.bmi.height.placeholder")}
             min="1"
             max="300"
             step="0.1"

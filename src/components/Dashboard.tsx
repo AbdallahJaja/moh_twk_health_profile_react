@@ -223,8 +223,7 @@ const Dashboard: React.FC = () => {
           <div className="flex-shrink-0 h-16 w-16 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden transition-colors mr-3">
             {/* User avatar placeholder */}
             <div className="h-full w-full flex items-center justify-center text-gray-500 dark:text-gray-300 font-bold text-xl transition-colors">
-              {firstName?.charAt(0) ||
-                t("profile.defaultAvatar")}
+              {firstName?.charAt(0) || t("profile.defaultAvatar")}
             </div>
           </div>
           <div className="mr-6">
@@ -288,16 +287,21 @@ const Dashboard: React.FC = () => {
                   <h3 className="font-medium text-gray-900 dark:text-white transition-colors">
                     {t(item.title)}
                   </h3>
-                  {item.count !== undefined && item.count > 0 && (
-                    <span className="mr-5 text-xs bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded-full">
-                      {item.count}
-                    </span>
-                  )}
-                  {item.value !== undefined && (
-                    <span className="mr-5 text-sm text-gray-500 dark:text-gray-400">
-                      {item.value}
-                    </span>
-                  )}
+                  {/* Add more spacing here for badges/values */}
+                  <div className="mx-3">
+                    {" "}
+                    {/* Increased margin from mr-5 to mx-4 */}
+                    {item.count !== undefined && item.count > 0 && (
+                      <span className="text-xs bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded-full">
+                        {item.count}
+                      </span>
+                    )}
+                    {item.value !== undefined && (
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {item.value}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <ChevronRight
                   style={{ transform: isRTL ? "scaleX(-1)" : undefined }}

@@ -1,14 +1,17 @@
 // src/components/Placeholder.tsx
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface PlaceholderProps {
   title?: string;
 }
-
 const Placeholder: React.FC<PlaceholderProps> = ({ title }) => {
   const navigate = useNavigate();
+  const params = useParams();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.dir() === "rtl";
   const params = useParams();
 
   const getTitle = () => {
@@ -41,9 +44,17 @@ const Placeholder: React.FC<PlaceholderProps> = ({ title }) => {
       <div className="flex items-center mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-gray-100"
+          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 mx-2 transition-colors"
+          aria-label={t("actions.back")}
         >
-          <ArrowRight size={20} />
+          {isRTL ? (
+            <ArrowRight
+              size={20}
+              className="text-gray-700 dark:text-gray-200"
+            />
+          ) : (
+            <ArrowLeft size={20} className="text-gray-700 dark:text-gray-200" />
+          )}
         </button>
         <h2 className="text-xl font-bold mr-2">{getTitle()}</h2>
       </div>

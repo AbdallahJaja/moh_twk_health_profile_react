@@ -180,16 +180,23 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
   
       if (success) {
         setAllergies(updatedAllergies);
-        setFormSuccess(t('allergies.success.add'));
+        setFormSuccess(t("allergies.success.add"));
         sessionStorage.removeItem("dashboardData"); // Clear cached data
         // Don't clear form immediately
         setTimeout(() => {
-          setMode("list");
-          setFormSuccess(null);
-          // Reset form after transition
-          setAllergyName("");
-          setSeverity("");
-        }, 1500);
+          // Fade out animation for success message
+          const successElement = document.querySelector(".success-alert");
+          if (successElement) {
+            successElement.classList.add("opacity-0");
+          }
+          setTimeout(() => {
+            setMode("list");
+            setFormSuccess(null);
+            // Reset form after transition
+            setAllergyName("");
+            setSeverity("");
+          }, 300);
+        }, 1500); // Display duration
       }
     } finally {
       setIsSubmitting(false);
@@ -250,11 +257,18 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
       setAllergyName("");
       setSeverity("");
 
+      setTimeout(() => {
+          // Fade out animation for success message
+          const successElement = document.querySelector(".success-alert");
+          if (successElement) {
+            successElement.classList.add("opacity-0");
+          }
       // Switch back to list mode after a delay
       setTimeout(() => {
         setMode("list");
         setFormSuccess(null);
-      }, 1500);
+      }, 300);
+    }, 1500);
     }
   };
 
@@ -281,8 +295,15 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
       sessionStorage.removeItem("dashboardData");
   
       setTimeout(() => {
+          // Fade out animation for success message
+          const successElement = document.querySelector(".success-alert");
+          if (successElement) {
+            successElement.classList.add("opacity-0");
+          }
+      setTimeout(() => {
         setFormSuccess(null);
-      }, 1500);
+      }, 300);
+    }, 1500);
     }
   
     setDeleteConfirm({ isOpen: false, itemId: null });

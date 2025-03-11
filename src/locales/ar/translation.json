@@ -131,7 +131,8 @@
       "addMeasurement": "إضافة قياس",
       "previousHistory": "عرض السجل",
       "lastUpdate": "آخر تحديث",
-      "additionalInfo": "معلومات إضافية"
+      "additionalInfo": "معلومات إضافية",
+      "measurementDate": "تاريخ التسجيل"
     },
     "bmi": {
       "weight": {
@@ -154,7 +155,7 @@
         }
       }
     },
-    "blood-pressure": {
+    "bloodPressure": {
       "systolic": {
         "label": "الضغط الانقباضي (ملم زئبق)",
         "placeholder": "أدخل قيمة الضغط الانقباضي",
@@ -175,7 +176,12 @@
         }
       }
     },
-    "blood-glucose": {
+    "bloodGlucose": {
+       "label": "سكر الدم (ملغم/ديسيلتر)",
+        "placeholder": "أدخل قيمة سكر الدم",
+        "error": "الرجاء إدخال قيمة صحيحة لسكر الدم (20-600 ملغم/ديسيلتر)",
+        "fasting": "صائم",
+        "random": "عشوائي",
       "value": {
         "label": "سكر الدم (ملغم/ديسيلتر)",
         "placeholder": "أدخل قيمة سكر الدم",
@@ -191,6 +197,12 @@
         }
       }
     },
+    "waist": {
+      "label": "محيط الخصر (سم)",
+      "placeholder": "أدخل محيط الخصر",
+      "error": "الرجاء إدخال قيمة صحيحة لمحيط الخصر (20-200 سم)"
+    },
+
     "validation": {
       "required": {
         "weight": "الرجاء إدخال الوزن",
@@ -551,5 +563,16 @@
         "type": "نوع المعلومات غير محدد"
       }
     }
+  },
+  "healthRecord": {
+    "title": "السجل الصحي",
+    "subTitle": "السجل الصحي",
+    "description": "يمكنك الاطلاع على سجلك الصحي الكامل هنا، بما في ذلك الزيارات الطبية والوصفات الطبية والفحوصات.",
+    "lastMedicalVisit": "آخر زيارة طبية",
+    "medicalVisitLocation": "عيادة عامة - مستشفى الملك فهد",
+    "lastPrescription": "آخر وصفة طبية",
+    "prescriptionDetails": "باراسيتامول 500 ملغ - 3 مرات يومياً",
+    "lastLabTest": "آخر فحص مخبري",
+    "labTestDetails": "فحص دم شامل - مختبر العليا"
   }
 }

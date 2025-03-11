@@ -1,31 +1,38 @@
-import React from 'react';
-import { AlertTriangle, Check, Info } from 'lucide-react';
-import { colors } from '../../../styles/colors';
+// src/components/common/ui/Alert.tsx
+// Add transition classes
 
-type AlertType = 'success' | 'error' | 'info';
+import { AlertTriangle, Check } from "lucide-react";
 
 interface AlertProps {
-  type: AlertType;
+  type: 'success' | 'error';
   message: string;
 }
 
-export const Alert: React.FC<AlertProps> = ({ type, message }) => {
-  const icons = {
-    success: <Check size={16} />,
-    error: <AlertTriangle size={16} />,
-    info: <Info size={16} />
-  };
-
-  return (
-    <div className={`
-      mb-4 p-3 rounded-md flex items-center gap-2
-      ${colors.status[type].bg}
-      ${colors.status[type].text}
-      ${colors.status[type].border}
-      border transition-all duration-200
-    `}>
-      {icons[type]}
-      {message}
+export const Alert = ({ type, message }: AlertProps) => (
+  <div
+    className={`
+      success-alert p-4 mb-4 rounded-md transition-opacity duration-300
+      ${
+        type === "success"
+          ? "bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300"
+          : ""
+      }
+      ${
+        type === "error"
+          ? "bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-300"
+          : ""
+      }
+    `}
+  >
+    {/* Alert content */}
+    <div className="flex">
+      {type === "success" && (
+        <Check size={18} className="mr-2 rtl:ml-2 rtl:mr-0" />
+      )}
+      {type === "error" && (
+        <AlertTriangle size={18} className="mr-2 rtl:ml-2 rtl:mr-0" />
+      )}
+      <span>{message}</span>
     </div>
-  );
-};
+  </div>
+);

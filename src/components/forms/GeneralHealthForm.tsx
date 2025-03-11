@@ -191,10 +191,17 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
       setFormValues({});
       setSelectedItem(null);
 
+      setTimeout(() => {
+          // Fade out animation for success message
+          const successElement = document.querySelector(".success-alert");
+          if (successElement) {
+            successElement.classList.add("opacity-0");
+          }
       // Switch back to view mode after a delay
       setTimeout(() => {
         setMode("view");
         setFormSuccess(null);
+      }, 300);
       }, 1500);
     }
 
@@ -242,9 +249,16 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
       setFormSuccess(t("generalHealth.success.delete"));
       sessionStorage.removeItem("dashboardData"); // Clear cached data
 
+      setTimeout(() => {
+          // Fade out animation for success message
+          const successElement = document.querySelector(".success-alert");
+          if (successElement) {
+            successElement.classList.add("opacity-0");
+          }
       // Clear success message after delay
       setTimeout(() => {
         setFormSuccess(null);
+      }, 300);
       }, 1500);
     }
 

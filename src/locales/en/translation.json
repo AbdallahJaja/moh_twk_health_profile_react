@@ -131,7 +131,8 @@
       "addMeasurement": "Add Measurement",
       "previousHistory": "View History",
       "lastUpdate": "Last updated",
-      "additionalInfo": "Additional Information"
+      "additionalInfo": "Additional Information",
+      "measurementDate": "Record Date"
     },
     "bmi": {
       "weight": {
@@ -154,7 +155,7 @@
         }
       }
     },
-    "blood-pressure": {
+    "bloodPressure": {
       "systolic": {
         "label": "Systolic (mmHg)",
         "placeholder": "Enter systolic value",
@@ -175,7 +176,12 @@
         }
       }
     },
-    "blood-glucose": {
+    "bloodGlucose": {
+      "fasting" : "Fasting",
+      "random": "Random",
+        "label": "Blood Glucose (mg/dL)",
+        "placeholder": "Enter blood glucose value",
+        "error": "Please enter a valid glucose value (20-600)",
       "value": {
         "label": "Blood Glucose (mg/dL)",
         "placeholder": "Enter blood glucose value",
@@ -190,6 +196,11 @@
           "high": "High (fasting): 126 mg/dL or higher"
         }
       }
+    },
+    "waist": {
+      "label": "Waist Circumference (cm)",
+      "placeholder": "Enter waist circumference",
+      "error": "Please enter a valid waist circumference (20-200 cm)"
     },
     "validation": {
       "required": {
@@ -548,5 +559,16 @@
         "type": "Information type is required"
       }
     }
+  },
+  "healthRecord": {
+    "title": "Health Record",
+    "subTitle": "Health Record",
+    "description": "You can view your complete health record here, including medical visits, prescriptions, and lab tests.",
+    "lastMedicalVisit": "Last Medical Visit",
+    "medicalVisitLocation": "General Clinic - King Fahd Hospital",
+    "lastPrescription": "Last Prescription",
+    "prescriptionDetails": "Paracetamol 500 mg - 3 times daily",
+    "lastLabTest": "Last Lab Test",
+    "labTestDetails": "Comprehensive blood test - Al Ulya Lab"
   }
 }

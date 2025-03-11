@@ -17,13 +17,20 @@ const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center">
           {!isRootPath && (
-            <button 
-              onClick={() => navigate(-1)}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 mx-2 transition-colors"
-              aria-label={t('actions.back')}
-            >
-              {isRTL ? <ArrowRight size={20} className="dark:text-white" /> : <ArrowLeft size={20} className="dark:text-white" />}
-            </button>
+            <button
+                      onClick={() => navigate(-1)}
+                      className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 mx-2 transition-colors"
+                      aria-label={t("actions.back")}
+                    >
+                      {isRTL ? (
+                        <ArrowRight
+                          size={20}
+                          className="text-gray-700 dark:text-gray-200"
+                        />
+                      ) : (
+                        <ArrowLeft size={20} className="text-gray-700 dark:text-gray-200" />
+                      )}
+                    </button>
           )}
           <h1 className="text-lg font-bold text-gray-900 dark:text-white transition-colors">{t('appName')}</h1>
         </div>

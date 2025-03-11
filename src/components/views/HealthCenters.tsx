@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Navigation, Phone, MapPin } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Navigation, Phone, MapPin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const HealthCenters: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(true);
+  const isRTL = document.documentElement.dir === 'rtl' || document.dir === 'rtl';
   
   // Mock health center data
   const healthCenter = {
@@ -104,9 +107,17 @@ const HealthCenters: React.FC = () => {
       <div className="flex items-center mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-gray-100"
+          aria-label="Back"
+          aria-label={t("actions.back")}
         >
-          <ArrowRight size={20} />
+          {isRTL ? (
+            <ArrowRight
+              size={20}
+              className="text-gray-700 dark:text-gray-200"
+            />
+          ) : (
+            <ArrowLeft size={20} className="text-gray-700 dark:text-gray-200" />
+          )}
         </button>
         <h2 className="text-xl font-bold mr-2">المركز الصحي المخصص</h2>
       </div>
