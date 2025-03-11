@@ -1,0 +1,1083 @@
+openapi: 3.0.3
+info:
+  title: Health Profile API
+  description: API for MOH TWK Health Profile application
+  version: 1.0.0
+  contact:
+    name: Ministry of Health
+servers:
+  - url: https://api.health.gov.sa/v1
+    description: Production server
+  - url: https://staging-api.health.gov.sa/v1
+    description: Staging server
+  - url: https://dev-api.health.gov.sa/v1
+    description: Development server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "An error occurred while processing the request"
+        code:
+          type: integer
+          format: int32
+          example: 400
+    
+    Success:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Operation completed successfully"
+    
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "2381026190"
+        name:
+          type: string
+          example: "عبدالله خليل محمد"
+        gender:
+          type: string
+          enum: [male, female]
+          example: "male"
+        birthDate:
+          type: string
+          format: date
+          example: "1986-08-17"
+        healthRecordId:
+          type: string
+          example: "MRN-10254367"
+        avatarUrl:
+          type: string
+          nullable: true
+          example: null
+    
+    DashboardSection:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "vitals"
+        title:
+          type: string
+          example: "sections.vitals.title"
+        icon:
+          type: string
+          example: "Activity"
+        color:
+          type: string
+          example: "blue"
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardItem'
+    
+    DashboardItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "bmi"
+        title:
+          type: string
+          example: "sections.vitals.bmi"
+        type:
+          type: string
+          example: "bmi"
+        icon:
+          type: string
+          example: "Scale"
+        count:
+          type: integer
+          nullable: true
+          example: null
+        value:
+          type: number
+          nullable: true
+          example: 24.8
+    
+    DashboardResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            userProfile:
+              $ref: '#/components/schemas/UserProfile'
+            sections:
+              type: array
+              items:
+                $ref: '#/components/schemas/DashboardSection'
+    
+    AppConfig:
+      type: object
+      properties:
+        features:
+          type: object
+          properties:
+            allowAllActions:
+              type: boolean
+              example: true
+            enableTwkIntegration:
+              type: boolean
+              example: true
+            enableOfflineMode:
+              type: boolean
+              example: false
+        version:
+          type: string
+          example: "1.0.0"
+        supportedLanguages:
+          type: array
+          items:
+            type: string
+          example: ["ar", "en"]
+    
+    Vital:
+      type: object
+      properties:
+        value:
+          oneOf:
+            - type: number
+              example: 24.8
+            - type: object
+              properties:
+                systolic:
+                  type: integer
+                  example: 120
+                diastolic:
+                  type: integer
+                  example: 80
+        history:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+                example: "2023-01-01"
+              value:
+                oneOf:
+                  - type: number
+                    example: 24.8
+                  - type: object
+                    properties:
+                      systolic:
+                        type: integer
+                        example: 120
+                      diastolic:
+                        type: integer
+                        example: 80
+    
+    VitalResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/Vital'
+    
+    VitalsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            bmi:
+              $ref: '#/components/schemas/Vital'
+            bloodPressure:
+              $ref: '#/components/schemas/Vital'
+            bloodGlucose:
+              $ref: '#/components/schemas/Vital'
+            waist:
+              $ref: '#/components/schemas/Vital'
+            weight:
+              $ref: '#/components/schemas/Vital'
+            height:
+              $ref: '#/components/schemas/Vital'
+    
+    VitalUpdateRequest:
+      type: object
+      properties:
+        value:
+          oneOf:
+            - type: number
+              example: 24.8
+            - type: object
+              properties:
+                systolic:
+                  type: integer
+                  example: 120
+                diastolic:
+                  type: integer
+                  example: 80
+        history:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+                example: "2023-01-01"
+              value:
+                oneOf:
+                  - type: number
+                    example: 24.8
+                  - type: object
+                    properties:
+                      systolic:
+                        type: integer
+                        example: 120
+                      diastolic:
+                        type: integer
+                        example: 80
+        notes:
+          type: string
+          nullable: true
+          example: "Measured at home"
+    
+    Allergy:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "باراسيتامول"
+        severity:
+          type: string
+          enum: [mild, moderate, severe]
+          example: "mild"
+        date:
+          type: string
+          format: date
+          example: "2023-05-15"
+    
+    AllergiesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            medicine:
+              type: array
+              items:
+                $ref: '#/components/schemas/Allergy'
+            food:
+              type: array
+              items:
+                $ref: '#/components/schemas/Allergy'
+            material:
+              type: array
+              items:
+                $ref: '#/components/schemas/Allergy'
+            doctor:
+              type: array
+              items:
+                $ref: '#/components/schemas/Allergy'
+    
+    AllergyUpdateRequest:
+      type: array
+      items:
+        $ref: '#/components/schemas/Allergy'
+    
+    Medication:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Paracetamol"
+        dose:
+          type: string
+          example: "500mg"
+        frequency:
+          type: string
+          enum: [once, twice, thrice, asNeeded]
+          example: "thrice"
+        startDate:
+          type: string
+          format: date
+          example: "2023-01-15"
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          example: "2023-01-25"
+        duration:
+          type: string
+          nullable: true
+          example: "10 days"
+        doctor:
+          type: string
+          example: "Dr. Ahmad Saeed"
+        notes:
+          type: string
+          nullable: true
+          example: "Take after meals"
+    
+    MedicationsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            current:
+              type: array
+              items:
+                $ref: '#/components/schemas/Medication'
+            previous:
+              type: array
+              items:
+                $ref: '#/components/schemas/Medication'
+    
+    MedicationUpdateRequest:
+      type: array
+      items:
+        $ref: '#/components/schemas/Medication'
+    
+    HealthCondition:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "ربو خفيف"
+        date:
+          type: string
+          format: date
+          example: "2022-11-22"
+    
+    FamilyHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "سكري"
+        relation:
+          type: string
+          example: "والد"
+        date:
+          type: string
+          format: date
+          example: "2022-12-15"
+    
+    GeneralHealthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            bloodType:
+              type: string
+              nullable: true
+              example: "O+"
+            healthConditions:
+              type: array
+              items:
+                $ref: '#/components/schemas/HealthCondition'
+            familyHistory:
+              type: array
+              items:
+                $ref: '#/components/schemas/FamilyHistory'
+    
+    HealthConditionUpdateRequest:
+      type: array
+      items:
+        $ref: '#/components/schemas/HealthCondition'
+    
+    FamilyHistoryUpdateRequest:
+      type: array
+      items:
+        $ref: '#/components/schemas/FamilyHistory'
+    
+    BloodTypeUpdateRequest:
+      type: object
+      properties:
+        bloodType:
+          type: string
+          example: "O+"
+    
+    HealthCenter:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "مستشفى الملك فهد"
+        distance:
+          type: string
+          example: "2.3"
+        address:
+          type: string
+          example: "شارع الأمير فهد، حي العليا، الرياض"
+        phone:
+          type: string
+          example: "0118324000"
+        lat:
+          type: number
+          example: 24.7136
+        lng:
+          type: number
+          example: 46.6753
+        services:
+          type: array
+          items:
+            type: string
+          example: ["طوارئ", "عيادات خارجية", "أشعة"]
+        workingHours:
+          type: string
+          example: "على مدار الساعة"
+    
+    HealthCenterResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/HealthCenter'
+
+security:
+  - bearerAuth: []
+
+paths:
+  /config:
+    get:
+      summary: Get application configuration
+      operationId: getConfig
+      tags:
+        - Config
+      responses:
+        '200':
+          description: Application configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppConfig'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /dashboard:
+    get:
+      summary: Get dashboard data
+      operationId: getDashboard
+      tags:
+        - Dashboard
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /vitals:
+    get:
+      summary: Get all vital signs
+      operationId: getAllVitals
+      tags:
+        - Vitals
+      responses:
+        '200':
+          description: All vital signs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VitalsResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /vitals/{type}:
+    get:
+      summary: Get vital sign by type
+      operationId: getVitalByType
+      tags:
+        - Vitals
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [bmi, bloodPressure, bloodGlucose, waist, weight, height]
+      responses:
+        '200':
+          description: Vital sign data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VitalResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      summary: Update vital sign
+      operationId: updateVital
+      tags:
+        - Vitals
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [bmi, bloodPressure, bloodGlucose, waist, weight, height]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VitalUpdateRequest'
+      responses:
+        '200':
+          description: Successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /allergies:
+    get:
+      summary: Get all allergies
+      operationId: getAllAllergies
+      tags:
+        - Allergies
+      responses:
+        '200':
+          description: All allergies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllergiesResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /allergies/{type}:
+    get:
+      summary: Get allergies by type
+      operationId: getAllergiesByType
+      tags:
+        - Allergies
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [medicine, food, material, doctor]
+      responses:
+        '200':
+          description: Allergies data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Allergy'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      summary: Update allergies by type
+      operationId: updateAllergiesByType
+      tags:
+        - Allergies
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [medicine, food, material]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllergyUpdateRequest'
+      responses:
+        '200':
+          description: Successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /medications:
+    get:
+      summary: Get all medications
+      operationId: getAllMedications
+      tags:
+        - Medications
+      responses:
+        '200':
+          description: All medications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationsResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /medications/{type}:
+    get:
+      summary: Get medications by type
+      operationId: getMedicationsByType
+      tags:
+        - Medications
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [current, previous]
+      responses:
+        '200':
+          description: Medications data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Medication'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      summary: Update medications by type
+      operationId: updateMedicationsByType
+      tags:
+        - Medications
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [current, previous]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicationUpdateRequest'
+      responses:
+        '200':
+          description: Successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /general-health:
+    get:
+      summary: Get general health information
+      operationId: getGeneralHealth
+      tags:
+        - General Health
+      responses:
+        '200':
+          description: General health information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralHealthResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /general-health/blood-type:
+    put:
+      summary: Update blood type
+      operationId: updateBloodType
+      tags:
+        - General Health
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BloodTypeUpdateRequest'
+      responses:
+        '200':
+          description: Successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /general-health/health-conditions:
+    put:
+      summary: Update health conditions
+      operationId: updateHealthConditions
+      tags:
+        - General Health
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthConditionUpdateRequest'
+      responses:
+        '200':
+          description: Successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /general-health/family-history:
+    put:
+      summary: Update family history
+      operationId: updateFamilyHistory
+      tags:
+        - General Health
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FamilyHistoryUpdateRequest'
+      responses:
+        '200':
+          description: Successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /health-centers/nearest:
+    get:
+      summary: Get nearest health center
+      operationId: getNearestHealthCenter
+      tags:
+        - Health Centers
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            example: 24.7136
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            example: 46.6753
+      responses:
+        '200':
+          description: Nearest health center
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCenterResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

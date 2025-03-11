@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useHealthData } from "../../context/HealthDataContext";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../../context/LanguageContext";
+import { useFeatureConfig } from "../../context/FeatureConfigContext";
 import { Users, Plus, Edit2, Trash2, Info, AlertTriangle } from "lucide-react";
 import { GeneralHealthFormSkeleton } from "../common/skeletons";
 import { SectionHeader } from "../common/ui/SectionHeader";
@@ -26,6 +27,7 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
   const { language } = useLanguage();
   const params = useParams<{ type?: string }>();
   const { healthData, updateData, isLoading } = useHealthData();
+  const { canPerformAction } = useFeatureConfig();
 
   // Use prop type or param type
   const type = propType || params.type;
@@ -48,6 +50,11 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
     isOpen: false,
     itemId: null,
   });
+
+  // Check permissions based on feature flags
+  const canAdd = canPerformAction("add", `generalHealth.${type}`);
+  const canEdit = canPerformAction("edit", `generalHealth.${type}`);
+  const canDelete = canPerformAction("delete", `generalHealth.${type}`);
 
   // Blood types from config
   const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -196,6 +203,8 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
 
   // Handle deleting an item
   const handleDeleteClick = (id: number) => {
+    if (!canDelete) return;
+
     setDeleteConfirm({
       isOpen: true,
       itemId: id,
@@ -203,7 +212,7 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
   };
 
   const handleDeleteConfirm = async () => {
-    if (deleteConfirm.itemId === null) return;
+    if (deleteConfirm.itemId === null || !canDelete) return;
 
     // Filter out the selected item
     const updatedItems = (generalData as any[]).filter(
@@ -244,6 +253,8 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
 
   // Handle selecting an item for editing
   const handleEditItem = (item: any) => {
+    if (!canEdit) return;
+
     setSelectedItem(item);
     setFormValues({
       name: item.name,
@@ -292,15 +303,18 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
       <SectionHeader
         title={t("generalHealth.types.bloodType.title")}
         action={
-          <button
-            onClick={() => {
-              setMode("add");
-              setFormValues({ bloodType: generalData || "" });
-            }}
-            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors flex items-center"
-          >
-            {generalData ? t("actions.update") : t("actions.add")}
-          </button>
+          canEdit || canAdd ? (
+            <button
+              onClick={() => {
+                setMode("add");
+                setFormValues({ bloodType: generalData || "" });
+              }}
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors flex items-center"
+              disabled={!canEdit && generalData !== null}
+            >
+              {generalData ? t("actions.update") : t("actions.add")}
+            </button>
+          ) : null
         }
       />
 
@@ -325,12 +339,14 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
             <p className={colors.text.secondary}>
               {t("generalHealth.types.bloodType.empty")}
             </p>
-            <button
-              onClick={() => setMode("add")}
-              className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
-            >
-              {t("generalHealth.types.bloodType.select")}
-            </button>
+            {canAdd && (
+              <button
+                onClick={() => setMode("add")}
+                className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+              >
+                {t("generalHealth.types.bloodType.select")}
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -353,16 +369,18 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
       <SectionHeader
         title={t(`generalHealth.types.${type}.title`)}
         action={
-          <button
-            onClick={() => {
-              setMode("add");
-              setFormValues({});
-            }}
-            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md flex items-center transition-colors"
-          >
-            <Plus size={16} className="rtl:ml-2 ltr:mr-2" />
-            {t("actions.add")}
-          </button>
+          canAdd ? (
+            <button
+              onClick={() => {
+                setMode("add");
+                setFormValues({});
+              }}
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md flex items-center transition-colors"
+            >
+              <Plus size={16} className="rtl:ml-2 ltr:mr-2" />
+              {t("actions.add")}
+            </button>
+          ) : null
         }
       />
 
@@ -377,13 +395,15 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
           <p className={colors.text.secondary}>
             {t(`generalHealth.types.${type}.empty`)}
           </p>
-          <button
-            onClick={() => setMode("add")}
-            className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md inline-flex items-center transition-colors"
-          >
-            <Plus size={16} className="rtl:ml-2 ltr:mr-2" />
-            {t("actions.add")}
-          </button>
+          {canAdd && (
+            <button
+              onClick={() => setMode("add")}
+              className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md inline-flex items-center transition-colors"
+            >
+              <Plus size={16} className="rtl:ml-2 ltr:mr-2" />
+              {t("actions.add")}
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
@@ -414,20 +434,24 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
                   </p>
                 </div>
                 <div className="flex items-center">
-                  <button
-                    onClick={() => handleEditItem(item)}
-                    className={`p-2 hover:${colors.background.tertiary} ${colors.text.tertiary} transition-colors rounded-full`}
-                    aria-label={t("actions.edit")}
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClick(item.id)}
-                    className={`p-2 hover:${colors.background.tertiary} text-red-500 transition-colors rounded-full`}
-                    aria-label={t("actions.delete")}
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  {canEdit && (
+                    <button
+                      onClick={() => handleEditItem(item)}
+                      className={`p-2 hover:${colors.background.tertiary} ${colors.text.tertiary} transition-colors rounded-full`}
+                      aria-label={t("actions.edit")}
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                  )}
+                  {canDelete && (
+                    <button
+                      onClick={() => handleDeleteClick(item.id)}
+                      className={`p-2 hover:${colors.background.tertiary} text-red-500 transition-colors rounded-full`}
+                      aria-label={t("actions.delete")}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

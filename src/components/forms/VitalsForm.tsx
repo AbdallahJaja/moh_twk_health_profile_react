@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useHealthData } from "../../context/HealthDataContext";
+import { useFeatureConfig } from "../../context/FeatureConfigContext";
 import {
   Activity,
   ArrowRight,
@@ -19,26 +20,36 @@ import { VitalsFormSkeleton } from "../common/skeletons";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../../context/LanguageContext";
 import { colors } from "../../styles/colors";
-import { SectionHeader } from '../common/ui/SectionHeader';
-import { StatusIndicator } from '../common/ui/StatusIndicator';
-import { Alert } from '../common/ui/Alert';
+import { SectionHeader } from "../common/ui/SectionHeader";
+import { StatusIndicator } from "../common/ui/StatusIndicator";
+import { Alert } from "../common/ui/Alert";
+import { ConfirmDialog } from "../common/ConfirmDialog";
 
 interface VitalsFormProps {
   type?: string;
   title?: string;
 }
 
-const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
+const VitalsForm: React.FC<VitalsFormProps> = ({
+  type: propType,
+  title: propTitle,
+}) => {
   const params = useParams<{ type?: string }>();
   const { healthData, updateData, isLoading } = useHealthData();
   const { t } = useTranslation();
   const { language } = useLanguage();
+  const { canPerformAction } = useFeatureConfig();
   const direction = language === "ar" ? "rtl" : "ltr";
 
   // Use prop type or param type
-  type = type || params.type;
+  const type = propType || params.type;
   // Use prop title or generate from type
-  title = title || getFormTitle(type);
+  const title = propTitle || t(`vitals.types.${type || "default"}`);
+
+  // Check permissions based on feature flags
+  const canAdd = canPerformAction("add", `vitals.${type}`);
+  const canEdit = canPerformAction("edit", `vitals.${type}`);
+  const canDelete = canPerformAction("delete", `vitals.${type}`);
 
   // Form states
   const [mode, setMode] = useState<"view" | "add" | "history">("view");
@@ -47,12 +58,20 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [vitalData, setVitalData] = useState<any>(null);
   const [historyData, setHistoryData] = useState<any[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   type StatusSeverity = keyof typeof colors.status;
-  const [statusInfo, setStatusInfo] = useState<{ 
-    severity: StatusSeverity; 
-    category: string 
+  const [statusInfo, setStatusInfo] = useState<{
+    severity: StatusSeverity;
+    category: string;
   } | null>(null);
   const [isFasting, setIsFasting] = useState(true); // For blood glucose
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    itemId: number | null;
+  }>({
+    isOpen: false,
+    itemId: null,
+  });
 
   // Initialize vital data from context
   useEffect(() => {
@@ -99,20 +118,20 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
 
   // Get form title based on type
   function getFormTitle(formType?: string): string {
-    return t(`vitals.types.${formType || 'default'}`);
+    return t(`vitals.types.${formType || "default"}`);
   }
 
   // Update status information based on vital data
   const mapSeverityToStatus = (severity: string): StatusSeverity => {
     switch (severity) {
-      case 'normal':
-        return 'success';
-      case 'warning':
-        return 'warning';
-      case 'danger':
-        return 'error';
+      case "normal":
+        return "success";
+      case "warning":
+        return "warning";
+      case "danger":
+        return "error";
       default:
-        return 'info';
+        return "info";
     }
   };
 
@@ -120,17 +139,17 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
     switch (type) {
       case "bmi": {
         const bmiStatus = getBMICategory(data);
-        setStatusInfo({ 
+        setStatusInfo({
           severity: mapSeverityToStatus(bmiStatus.color),
-          category: bmiStatus.category 
+          category: bmiStatus.category,
         });
         break;
       }
       case "blood-pressure": {
         const bpCategory = getBloodPressureCategory(data);
-        setStatusInfo({ 
+        setStatusInfo({
           severity: mapSeverityToStatus(bpCategory.color),
-          category: bpCategory.category 
+          category: bpCategory.category,
         });
         break;
       }
@@ -141,14 +160,14 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
 
   // Format date to local format
   const formatDate = (dateString: string) => {
-    if (!dateString) return t('common.notAvailable');
+    if (!dateString) return t("common.notAvailable");
 
     const date = new Date(dateString);
     return new Intl.DateTimeFormat(language, {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
-      calendar: "gregory"
+      calendar: "gregory",
     }).format(date);
   };
 
@@ -160,10 +179,80 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
     });
   };
 
+  // Handle deleting a history item
+  const handleDeleteClick = (index: number) => {
+    if (!canDelete) return;
+
+    setDeleteConfirm({
+      isOpen: true,
+      itemId: index,
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteConfirm.itemId === null || !canDelete || historyData.length === 0)
+      return;
+
+    // Create a copy of history data without the deleted item
+    const newHistory = [...historyData];
+    newHistory.splice(deleteConfirm.itemId, 1);
+
+    // If we're deleting the latest/current record, update the current value
+    const newValue = newHistory.length > 0 ? newHistory[0].value : null;
+
+    // Prepare data for update
+    const updatedVital = {
+      value: newValue,
+      history: newHistory,
+    };
+
+    // Map type to context property
+    const vitalTypeMap: Record<string, string> = {
+      bmi: "bmi",
+      "blood-pressure": "bloodPressure",
+      "blood-glucose": "bloodGlucose",
+      waist: "waist",
+      weight: "weight",
+      height: "height",
+    };
+
+    if (!type) {
+      setDeleteConfirm({ isOpen: false, itemId: null });
+      return;
+    }
+
+    // Update context data
+    const success = await updateData(
+      "vitals",
+      vitalTypeMap[type],
+      updatedVital
+    );
+
+    if (success) {
+      setVitalData(newValue);
+      setHistoryData(newHistory);
+      if (newValue) {
+        updateStatusInfo(newValue);
+      }
+      setFormSuccess(t("vitals.success.dataDeleted"));
+      sessionStorage.removeItem("dashboardData"); // Clear cached data
+
+      // Clear success message after delay
+      setTimeout(() => {
+        setFormSuccess(null);
+      }, 1500);
+    }
+
+    setDeleteConfirm({ isOpen: false, itemId: null });
+  };
+
   // Handle form submission
   const handleSubmit = async () => {
+    setIsSubmitting(true);
+
     // Validate form based on type
     if (!validateForm()) {
+      setIsSubmitting(false);
       return;
     }
 
@@ -178,7 +267,8 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
       case "bmi":
         // BMI is calculated from weight and height
         if (!formValues.weight || !formValues.height) {
-          setFormError("الرجاء إدخال الوزن والطول");
+          setFormError("vitals.errors.weightHeightRequired");
+          setIsSubmitting(false);
           return;
         }
 
@@ -195,11 +285,11 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
 
         // Create weight data
         const weightVital = {
-          value: formValues.weight,
+          value: parseFloat(formValues.weight),
           history: [
             {
               date: weightDate,
-              value: formValues.weight,
+              value: parseFloat(formValues.weight),
             },
             ...(healthData.vitals.weight?.history || []).slice(0, 9),
           ],
@@ -207,11 +297,11 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
 
         // Create height data
         const heightVital = {
-          value: formValues.height,
+          value: parseFloat(formValues.height),
           history: [
             {
               date: heightDate,
-              value: formValues.height,
+              value: parseFloat(formValues.height),
             },
             ...(healthData.vitals.height?.history || []).slice(0, 9),
           ],
@@ -232,7 +322,8 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
 
       case "blood-pressure":
         if (!formValues.systolic || !formValues.diastolic) {
-          setFormError("الرجاء إدخال قيم ضغط الدم");
+          setFormError("vitals.errors.bloodPressureRequired");
+          setIsSubmitting(false);
           return;
         }
 
@@ -249,7 +340,8 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
 
       default:
         if (!formValues.value) {
-          setFormError("الرجاء إدخال القيمة");
+          setFormError("vitals.errors.valueRequired");
+          setIsSubmitting(false);
           return;
         }
 
@@ -282,7 +374,8 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
     };
 
     if (!type) {
-      setFormError("نوع القياس غير محدد");
+      setFormError("vitals.errors.typeNotSpecified");
+      setIsSubmitting(false);
       return;
     }
 
@@ -328,7 +421,7 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
       setVitalData(newValue);
       setHistoryData(newHistory);
       updateStatusInfo(newValue);
-      setFormSuccess("تم تحديث البيانات بنجاح");
+      setFormSuccess(t("vitals.success.dataUpdated"));
 
       // Reset form
       setFormValues({});
@@ -339,6 +432,8 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
         setFormSuccess(null);
       }, 1500);
     }
+
+    setIsSubmitting(false);
   };
 
   // Validate form based on type
@@ -348,11 +443,11 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
     switch (type) {
       case "bmi":
         if (!formValues.weight) {
-          setFormError('vitals.validation.required.weight');
+          setFormError("vitals.validation.required.weight");
           return false;
         }
         if (!formValues.height) {
-          setFormError('vitals.validation.required.height');
+          setFormError("vitals.validation.required.height");
           return false;
         }
 
@@ -360,23 +455,23 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
         const height = parseFloat(formValues.height);
 
         if (isNaN(weight) || weight <= 0 || weight > 500) {
-          setFormError('vitals.validation.range.weight');
+          setFormError("vitals.validation.range.weight");
           return false;
         }
 
         if (isNaN(height) || height <= 0 || height > 300) {
-          setFormError('vitals.validation.range.height');
+          setFormError("vitals.validation.range.height");
           return false;
         }
         break;
 
       case "blood-pressure":
         if (!formValues.systolic) {
-          setFormError('vitals.validation.required.systolic');
+          setFormError("vitals.validation.required.systolic");
           return false;
         }
         if (!formValues.diastolic) {
-          setFormError('vitals.validation.required.diastolic');
+          setFormError("vitals.validation.required.diastolic");
           return false;
         }
 
@@ -384,31 +479,47 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
         const diastolic = parseInt(formValues.diastolic);
 
         if (isNaN(systolic) || systolic < 70 || systolic > 250) {
-          setFormError('vitals.validation.range.systolic');
+          setFormError("vitals.validation.range.systolic");
           return false;
         }
 
         if (isNaN(diastolic) || diastolic < 40 || diastolic > 150) {
-          setFormError('vitals.validation.range.diastolic');
+          setFormError("vitals.validation.range.diastolic");
           return false;
         }
 
         if (diastolic >= systolic) {
-          setFormError('vitals.validation.comparison.bloodPressure');
+          setFormError("vitals.validation.comparison.bloodPressure");
           return false;
         }
         break;
 
       case "blood-glucose":
         if (!formValues.value) {
-          setFormError('vitals.validation.required.glucose');
+          setFormError("vitals.validation.required.glucose");
           return false;
         }
 
         const glucose = parseFloat(formValues.value);
 
         if (isNaN(glucose) || glucose < 20 || glucose > 600) {
-          setFormError('vitals.validation.range.glucose');
+          setFormError("vitals.validation.range.glucose");
+          return false;
+        }
+        break;
+
+      case "waist":
+      case "weight":
+      case "height":
+        if (!formValues.value) {
+          setFormError(`vitals.validation.required.${type}`);
+          return false;
+        }
+
+        const value = parseFloat(formValues.value);
+
+        if (isNaN(value) || value <= 0) {
+          setFormError(`vitals.validation.range.${type}`);
           return false;
         }
         break;
@@ -427,35 +538,29 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
   }
 
   // Update success message
-  const renderSuccess = () => formSuccess && (
-    <Alert 
-      type="success" 
-      message={t('vitals.success.dataUpdated')} 
-    />
-  );
+  const renderSuccess = () =>
+    formSuccess && <Alert type="success" message={formSuccess} />;
 
   // Update error message
-  const renderError = () => formError && (
-    <Alert 
-      type="error" 
-      message={t(`vitals.validation.${formError}`)} 
-    />
-  );
+  const renderError = () =>
+    formError && <Alert type="error" message={t(formError)} />;
 
   // Render view mode
   const renderViewMode = () => (
     <div>
-      <SectionHeader 
+      <SectionHeader
         title={t(`vitals.types.${type}`)}
         action={
-          <button
-            onClick={() => setMode("add")}
-            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md 
-                     flex items-center transition-colors"
-          >
-            <Plus size={16} className="rtl:ml-2 ltr:mr-2" />
-            {t("vitals.form.addMeasurement")}
-          </button>
+          canAdd && (
+            <button
+              onClick={() => setMode("add")}
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md 
+                       flex items-center transition-colors"
+            >
+              <Plus size={16} className="rtl:ml-2 ltr:mr-2" />
+              {t("vitals.form.addMeasurement")}
+            </button>
+          )
         }
       />
       {renderSuccess()}
@@ -467,11 +572,11 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
       {type === "bmi" && renderBMIInfo()}
 
       {type === "blood-pressure" && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-          <h3 className="text-lg font-medium mb-4">
+        <div className={`${colors.background.secondary} rounded-lg p-6`}>
+          <h3 className={`text-lg font-medium mb-4 ${colors.text.primary}`}>
             {t("vitals.form.additionalInfo")}
           </h3>
-          <p className="text-gray-600 mb-2">
+          <p className={colors.text.secondary}>
             {t("vitals.blood-pressure.info.description")}
           </p>
           <div className="mt-4 space-y-2">
@@ -480,10 +585,7 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
                 returnObjects: true,
               })
             ).map(([key, value]) => (
-              <div
-                key={key}
-                className="text-sm text-gray-600 dark:text-gray-300"
-              >
+              <div key={key} className={`text-sm ${colors.text.secondary}`}>
                 {value}
               </div>
             ))}
@@ -492,21 +594,18 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
       )}
 
       {type === "blood-glucose" && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-          <h3 className="text-lg font-medium mb-4">
+        <div className={`${colors.background.secondary} rounded-lg p-6`}>
+          <h3 className={`text-lg font-medium mb-4 ${colors.text.primary}`}>
             {t("vitals.form.additionalInfo")}
           </h3>
-          <p className="text-gray-600 mb-2">
+          <p className={colors.text.secondary}>
             {t("vitals.blood-glucose.info.description")}
           </p>
           <div className="mt-4 space-y-2">
             {Object.entries(
               t("vitals.blood-glucose.info.categories", { returnObjects: true })
             ).map(([key, value]) => (
-              <div
-                key={key}
-                className="text-sm text-gray-600 dark:text-gray-300"
-              >
+              <div key={key} className={`text-sm ${colors.text.secondary}`}>
                 {value}
               </div>
             ))}
@@ -519,25 +618,19 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
   // Render add form
   const renderAddForm = () => (
     <div>
-      {/* Header with back button */}
-      <div className="flex items-center mb-6">
-        <button
-          onClick={() => {
-            setMode("view");
-            setFormValues({});
-            setFormError(null);
-          }}
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 
-                   text-gray-600 dark:text-gray-400 transition-colors"
-        >
-          <ArrowRight size={20} />
-        </button>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white rtl:mr-2 ltr:ml-2">
-          {vitalData ? t("vitals.form.editTitle") : t("vitals.form.addTitle")}
-        </h2>
-      </div>
+      <SectionHeader
+        title={
+          vitalData
+            ? t("vitals.form.editTitle", { type: t(`vitals.types.${type}`) })
+            : t("vitals.form.addTitle", { type: t(`vitals.types.${type}`) })
+        }
+        back={() => {
+          setMode("view");
+          setFormValues({});
+          setFormError(null);
+        }}
+      />
 
-      {/* Error message */}
       {renderError()}
 
       {/* BMI Form Fields */}
@@ -574,7 +667,9 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
             label={t("vitals.bloodPressure.systolic.label")}
             type="number"
             value={formValues.systolic || ""}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange("systolic", e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleInputChange("systolic", e.target.value)
+            }
             placeholder={t("vitals.bloodPressure.systolic.placeholder")}
             min="60"
             max="250"
@@ -584,7 +679,9 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
             label={t("vitals.bloodPressure.diastolic.label")}
             type="number"
             value={formValues.diastolic || ""}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange("diastolic", e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleInputChange("diastolic", e.target.value)
+            }
             placeholder={t("vitals.bloodPressure.diastolic.placeholder")}
             min="40"
             max="150"
@@ -592,37 +689,150 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
         </div>
       )}
 
+      {/* Blood Glucose Form Fields */}
+      {type === "blood-glucose" && (
+        <div className="space-y-6">
+          <Input
+            label={t("vitals.blood-glucose.value.label")}
+            type="number"
+            value={formValues.value || ""}
+            onChange={(e) => handleInputChange("value", e.target.value)}
+            placeholder={t("vitals.blood-glucose.value.placeholder")}
+            min="20"
+            max="600"
+            step="1"
+          />
+
+          <div>
+            <label
+              className={`block text-sm font-medium ${colors.text.secondary} mb-2`}
+            >
+              {t("vitals.blood-glucose.measurementType")}
+            </label>
+            <div className="flex">
+              <button
+                type="button"
+                className={`flex-1 py-2 ${
+                  isFasting
+                    ? "bg-blue-500 text-white"
+                    : `${colors.background.secondary} ${colors.text.secondary}`
+                } rounded-r-md transition-colors`}
+                onClick={() => setIsFasting(true)}
+              >
+                {t("vitals.blood-glucose.fasting")}
+              </button>
+              <button
+                type="button"
+                className={`flex-1 py-2 ${
+                  !isFasting
+                    ? "bg-blue-500 text-white"
+                    : `${colors.background.secondary} ${colors.text.secondary}`
+                } rounded-l-md transition-colors`}
+                onClick={() => setIsFasting(false)}
+              >
+                {t("vitals.blood-glucose.random")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Waist Form Fields */}
+      {type === "waist" && (
+        <div className="space-y-6">
+          <Input
+            label={t("vitals.waist.label")}
+            type="number"
+            value={formValues.value || ""}
+            onChange={(e) => handleInputChange("value", e.target.value)}
+            placeholder={t("vitals.waist.placeholder")}
+            min="30"
+            max="200"
+            step="0.1"
+          />
+        </div>
+      )}
+
+      {/* Weight Form Fields */}
+      {type === "weight" && (
+        <div className="space-y-6">
+          <Input
+            label={t("vitals.weight.label")}
+            type="number"
+            value={formValues.value || ""}
+            onChange={(e) => handleInputChange("value", e.target.value)}
+            placeholder={t("vitals.weight.placeholder")}
+            min="1"
+            max="500"
+            step="0.1"
+          />
+        </div>
+      )}
+
+      {/* Height Form Fields */}
+      {type === "height" && (
+        <div className="space-y-6">
+          <Input
+            label={t("vitals.height.label")}
+            type="number"
+            value={formValues.value || ""}
+            onChange={(e) => handleInputChange("value", e.target.value)}
+            placeholder={t("vitals.height.placeholder")}
+            min="1"
+            max="300"
+            step="0.1"
+          />
+        </div>
+      )}
+
+      {/* Date field for all forms */}
+      <div className="mt-6">
+        <Input
+          label={t("vitals.form.measurementDate")}
+          type="date"
+          value={formValues.date || new Date().toISOString().split("T")[0]}
+          onChange={(e) => handleInputChange("date", e.target.value)}
+          max={new Date().toISOString().split("T")[0]}
+        />
+      </div>
+
       {/* Submit Button */}
       <div className="flex justify-end mt-6">
         <button
           onClick={handleSubmit}
           className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md
                    transition-colors disabled:opacity-50"
+          disabled={isSubmitting}
         >
-          {vitalData ? t("actions.update") : t("actions.add")}
+          {isSubmitting
+            ? t("actions.saving")
+            : vitalData
+            ? t("actions.update")
+            : t("actions.add")}
         </button>
       </div>
     </div>
   );
 
-  // Continuing from the previous code...
-
   // Render history view
   const renderHistoryView = () => (
     <div className={colors.background.primary}>
-      <SectionHeader 
-        title={t('vitals.history.title')}
-        back={() => setMode('view')}
+      <SectionHeader
+        title={t("vitals.history.title")}
+        back={() => setMode("view")}
       />
 
       {historyData.length === 0 ? (
-        <div className={`
+        <div
+          className={`
           text-center py-10 ${colors.background.secondary} rounded-lg
-        `}>
-          <Activity size={40} className={`mx-auto ${colors.text.tertiary} mb-3`} />
-          <p className={colors.text.secondary}>
-            {t('vitals.history.noData')}
-          </p>
+        `}
+        >
+          <Activity
+            size={40}
+            className={`mx-auto ${colors.text.tertiary} mb-3`}
+          />
+          <p className={colors.text.secondary}>{t("vitals.history.noData")}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -642,17 +852,30 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
                     {formatDate(item.date)}
                   </p>
                   <h3 className={`font-medium mt-1 ${colors.text.primary}`}>
-                    {type === 'blood-pressure'
-                      ? `${item.value.systolic}/${item.value.diastolic} ${t(`vitals.units.${type}`)}`
+                    {type === "blood-pressure"
+                      ? `${item.value.systolic}/${item.value.diastolic} ${t(
+                          `vitals.units.${type}`
+                        )}`
                       : `${item.value} ${t(`vitals.units.${type}`)}`}
                   </h3>
                 </div>
-                {index === 0 && (
-                  <StatusIndicator 
-                    status="info" 
-                    label={t('vitals.history.latestMeasurement')} 
-                  />
-                )}
+                <div className="flex items-center">
+                  {index === 0 && (
+                    <StatusIndicator
+                      status="info"
+                      label={t("vitals.history.latestMeasurement")}
+                    />
+                  )}
+                  {canDelete && (
+                    <button
+                      onClick={() => handleDeleteClick(index)}
+                      className={`ms-2 p-2 hover:${colors.background.tertiary} text-red-500 transition-colors rounded-full`}
+                      aria-label={t("actions.delete")}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -665,25 +888,28 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
   const renderBMIInfo = () => (
     <Card>
       <h3 className={`font-medium ${colors.text.primary} mb-4`}>
-        {t('vitals.form.additionalInfo')}
+        {t("vitals.form.additionalInfo")}
       </h3>
       <p className={`${colors.text.secondary} mb-4`}>
-        {t('vitals.bmi.info.description')}
+        {t("vitals.bmi.info.description")}
       </p>
       <div className="space-y-3">
         {[
-          { key: 'normal', color: 'success' as const },
-          { key: 'overweight', color: 'warning' as const },
-          { key: 'underweight', color: 'info' as const },
-          { key: 'obese', color: 'error' as const }
+          { key: "normal", color: "success" as const },
+          { key: "overweight", color: "warning" as const },
+          { key: "underweight", color: "info" as const },
+          { key: "obese", color: "error" as const },
         ].map(({ key, color }) => (
-          <div key={key} className={`
+          <div
+            key={key}
+            className={`
             p-3 rounded-md transition-colors duration-200
             ${colors.status[color].bg} 
             ${colors.status[color].text}
             ${colors.status[color].border}
             border
-          `}>
+          `}
+          >
             {t(`vitals.bmi.info.categories.${key}`)}
           </div>
         ))}
@@ -693,43 +919,47 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
 
   // Add renderCurrentValue function
   const renderCurrentValue = () => (
-    <div className={`mb-6 p-6 ${colors.background.secondary} rounded-lg shadow-sm`}>
+    <div
+      className={`mb-6 p-6 ${colors.background.secondary} rounded-lg shadow-sm`}
+    >
       <div className="flex justify-between items-center mb-4">
         <h3 className={`text-lg font-medium ${colors.text.primary}`}>
-          {t('vitals.form.currentValue')}
+          {t("vitals.form.currentValue")}
         </h3>
         {vitalData && (
           <span className={colors.text.tertiary}>
-            {t('vitals.form.lastUpdate')}: {formatDate(historyData[0]?.date)}
+            {t("vitals.form.lastUpdate")}: {formatDate(historyData[0]?.date)}
           </span>
         )}
       </div>
 
       {!vitalData ? (
-        <p className={colors.text.secondary}>
-          {t('vitals.form.noValue')}
-        </p>
+        <p className={colors.text.secondary}>{t("vitals.form.noValue")}</p>
       ) : (
         <div>
           <div className={`text-3xl font-bold mb-2 ${colors.text.primary}`}>
-            {type === 'blood-pressure'
+            {type === "blood-pressure"
               ? `${vitalData.systolic}/${vitalData.diastolic}`
-              : type === 'bmi'
+              : type === "bmi"
               ? vitalData.toFixed(1)
               : vitalData}
-            <span className={`text-base font-normal ${colors.text.tertiary} rtl:mr-2 ltr:ml-2`}>
+            <span
+              className={`text-base font-normal ${colors.text.tertiary} rtl:mr-2 ltr:ml-2`}
+            >
               {t(`vitals.units.${type}`)}
             </span>
           </div>
-          
+
           {statusInfo && (
-            <div className={`
+            <div
+              className={`
               mt-4 p-3 rounded-md border
               ${colors.status[statusInfo.severity].bg}
               ${colors.status[statusInfo.severity].text}
               ${colors.status[statusInfo.severity].border}
               transition-all duration-200
-            `}>
+            `}
+            >
               <div className="flex items-center gap-2">
                 <Info size={16} />
                 <div>
@@ -737,7 +967,9 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
                     {t(`vitals.status.${type}.${statusInfo.category}`)}
                   </div>
                   <div className="text-sm">
-                    {t(`vitals.status.${type}.${statusInfo.category}.description`)}
+                    {t(
+                      `vitals.status.${type}.${statusInfo.category}.description`
+                    )}
                   </div>
                 </div>
               </div>
@@ -762,19 +994,26 @@ const VitalsForm: React.FC<VitalsFormProps> = ({ type, title }) => {
 
 // Update the card styling
 const Card = ({ children }: { children: React.ReactNode }) => (
-  <div className={`
+  <div
+    className={`
     ${colors.background.primary} 
     ${colors.border.primary}
     border rounded-lg shadow-sm p-6 transition-colors duration-200
-  `}>
+  `}
+  >
     {children}
   </div>
 );
 
 // Update form inputs
-const Input = ({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) => (
+const Input = ({
+  label,
+  ...props
+}: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) => (
   <div className="mb-4">
-    <label className={`block text-sm font-medium ${colors.text.secondary} mb-1`}>
+    <label
+      className={`block text-sm font-medium ${colors.text.secondary} mb-1`}
+    >
       {label}
     </label>
     <input

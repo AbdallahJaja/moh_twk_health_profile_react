@@ -4,6 +4,7 @@ import { API_CONFIG } from "./config";
 import { setupCache, buildStorage } from "axios-cache-interceptor";
 import { env } from "../../config/env";
 import type { ApiResponse } from "./types";
+import { AppConfig } from "../../context/FeatureConfigContext";
 import {
   GeneralHealthData,
   Allergy,
@@ -32,10 +33,22 @@ const cacheStorage = buildStorage({
   clear: async () => localStorage.clear(),
 });
 
+// Default mock config
+const mockConfig: AppConfig = {
+  features: {
+    allowAllActions: env.ALLOW_ALL_ACTIONS || false,
+    enableTwkIntegration: true,
+    enableOfflineMode: false,
+  },
+  version: "1.0.0",
+  supportedLanguages: ["ar", "en"],
+};
+
 // Mock data store
 const mockStore = {
   userProfile: { ...userProfile },
   sections: JSON.parse(JSON.stringify(dashboardSections)),
+  config: { ...mockConfig },
   generalHealth: {
     bloodType: "O+",
     allergies: [] as Allergy[],
@@ -67,6 +80,28 @@ const mockDelay = () => new Promise((resolve) => setTimeout(resolve, 500));
 
 // API service
 export const apiService = {
+  // New method to get application configuration
+  getConfig: async (): Promise<ApiResponse<AppConfig>> => {
+    if (env.USE_MOCK) {
+      await mockDelay();
+      return {
+        success: true,
+        data: {
+          ...mockStore.config,
+          features: {
+            ...mockStore.config.features,
+            // Override with env variable
+            allowAllActions:
+              env.ALLOW_ALL_ACTIONS ||
+              mockStore.config.features.allowAllActions,
+          },
+        },
+      };
+    }
+    const response = await api.get("/config");
+    return response.data;
+  },
+
   getDashboard: async () => {
     if (env.USE_MOCK) {
       await mockDelay();
