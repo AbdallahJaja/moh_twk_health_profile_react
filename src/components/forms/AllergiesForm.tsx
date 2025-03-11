@@ -98,7 +98,6 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
     }
   };
 
-  // Add handleSuggestionFilter function
   const handleSuggestionFilter = (value: string) => {
     const allSuggestions = getSuggestions();
     const filtered = allSuggestions.filter(suggestion =>
@@ -108,11 +107,6 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
     setShowSuggestions(true);
   };
 
-  // Add handleSuggestionSelect function
-  const handleSuggestionSelect = (suggestion: string) => {
-    setAllergyName(suggestion);
-    setShowSuggestions(false);
-  };
 
   // Initialize allergies from context
   useEffect(() => {

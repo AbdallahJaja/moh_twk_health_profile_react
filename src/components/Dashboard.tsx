@@ -157,7 +157,6 @@ const Dashboard: React.FC = () => {
     const RawIcon = Icons[iconName as IconName];
     if (!RawIcon) return null;
 
-    // If the icon function expects more than one argument, then it's not a valid JSX component.
     if (typeof RawIcon === "function" && RawIcon.length > 1) {
       return null;
     }
