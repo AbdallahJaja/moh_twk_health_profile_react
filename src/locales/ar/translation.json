@@ -53,9 +53,9 @@
     "call": "اتصال",
     "directions": "الاتجاهات",
     "retry": "حاول مرة أخرى",
-    "confirm": "تأكيد",
+    "saving": "جاري الحفظ...",
     "cancel": "إلغاء",
-    "saving": "جاري الحفظ..."
+    "confirm": "تأكيد"
   },
   "settings": {
     "darkMode": "وضع الليل",
@@ -120,7 +120,8 @@
       "blood-glucose": "سكر الدم",
       "waist": "محيط الخصر",
       "weight": "الوزن",
-      "height": "الطول"
+      "height": "الطول",
+      "default": "المؤشرات الحيوية"
     },
     "form": {
       "addTitle": "إضافة قياس {{type}}",
@@ -237,32 +238,27 @@
       }
     }
   },
-  "history": {
-    "title": "سجل القياسات السابقة",
-    "noData": "لا توجد قياسات سابقة",
-    "latestMeasurement": "أحدث قياس"
-  },
   "allergies": {
     "types": {
       "default": {
         "title": "الحساسيات",
-        "placeholder": "ادخل نوع الحساسية"
+        "placeholder": "أدخل نوع الحساسية"
       },
       "medicine": {
-        "title": "الحساسية للأدوية",
-        "placeholder": "ادخل اسم الدواء"
+        "title": "حساسية الأدوية",
+        "placeholder": "أدخل اسم الدواء"
       },
       "food": {
-        "title": "الحساسية للطعام",
-        "placeholder": "ادخل نوع الطعام"
+        "title": "حساسية الطعام",
+        "placeholder": "أدخل نوع الطعام"
       },
       "material": {
-        "title": "الحساسية للمواد",
-        "placeholder": "ادخل نوع المادة"
+        "title": "حساسية المواد",
+        "placeholder": "أدخل نوع المادة"
       },
       "doctor": {
         "title": "الحساسيات المضافة من الطبيب",
-        "placeholder": "ادخل نوع الحساسية"
+        "placeholder": "أدخل نوع الحساسية"
       }
     },
     "severity": {
@@ -271,6 +267,11 @@
       "severe": "شديدة",
       "label": "شدة الحساسية"
     },
+    "actions": {
+      "add": "إضافة حساسية",
+      "edit": "تعديل الحساسية",
+      "delete": "حذف الحساسية"
+    },
     "form": {
       "addTitle": "إضافة حساسية جديدة",
       "editTitle": "تعديل الحساسية",
@@ -278,12 +279,9 @@
       "severityLabel": "شدة الحساسية",
       "selectSeverity": "اختر شدة الحساسية"
     },
-    "actions": {
-      "add": "إضافة",
-      "edit": "تعديل",
-      "delete": "حذف"
+    "list": {
+      "empty": "لا توجد حساسيات مسجلة"
     },
-    "noData": "لا توجد حساسيات مسجلة",
     "dateRecorded": "تاريخ التسجيل",
     "success": {
       "add": "تم إضافة الحساسية بنجاح",
@@ -333,10 +331,23 @@
         "شعر الحيوانات",
         "حبوب اللقاح"
       ]
-    },
-    "list": {
-      "empty": "لا توجد حساسيات مسجلة"
     }
+  },
+  "validation": {
+    "required": {
+      "allergyType": "نوع الحساسية غير محدد",
+      "name": "الرجاء إدخال الاسم",
+      "severity": "الرجاء اختيار الشدة",
+      "type": "الرجاء اختيار النوع"
+    }
+  },
+  "common": {
+    "notAvailable": "غير متوفر"
+  },
+  "history": {
+    "title": "سجل القياسات السابقة",
+    "noData": "لا توجد قياسات سابقة",
+    "latestMeasurement": "أحدث قياس"
   },
   "medications": {
     "types": {
@@ -360,26 +371,59 @@
       "doctor": "الطبيب المعالج",
       "notes": "ملاحظات مهمة"
     },
+    "form": {
+      "addTitle": "إضافة دواء جديد",
+      "editTitle": "تعديل الدواء",
+      "nameLabel": "اسم الدواء",
+      "dosageLabel": "الجرعة",
+      "frequencyLabel": "التكرار",
+      "startDateLabel": "تاريخ البدء",
+      "endDateLabel": "تاريخ الانتهاء",
+      "notesLabel": "ملاحظات",
+      "prescribedByLabel": "بوصفة من",
+      "statusLabel": "الحالة"
+    },
+    "status": {
+      "active": "نشط",
+      "completed": "مكتمل",
+      "discontinued": "متوقف"
+    },
     "frequency": {
       "once": "مرة واحدة يومياً",
       "twice": "مرتين يومياً",
       "thrice": "ثلاث مرات يومياً",
-      "asNeeded": "عند الحاجة"
+      "weekly": "أسبوعياً",
+      "asNeeded": "عند الحاجة",
+      "daily": "يومياً"
+    },
+    "validation": {
+      "required": {
+        "name": "الرجاء إدخال اسم الدواء",
+        "dosage": "الرجاء إدخال الجرعة",
+        "frequency": "الرجاء اختيار التكرار",
+        "startDate": "الرجاء اختيار تاريخ البدء"
+      }
+    },
+    "success": {
+      "add": "تم إضافة الدواء بنجاح",
+      "update": "تم تحديث الدواء بنجاح",
+      "delete": "تم حذف الدواء بنجاح"
+    },
+    "names": {
+      "paracetamol": "باراسيتامول"
     }
-  },
-  "validation": {
-    "required": {
-      "name": "الرجاء إدخال اسم الحساسية",
-      "severity": "الرجاء اختيار شدة الحساسية",
-      "allergyType": "نوع الحساسية غير محدد",
-      "type": "الرجاء تحديد نوع الحساسية"
-    }
-  },
-  "common": {
-    "notAvailable": "غير متوفر"
   },
   "generalHealth": {
+    "confirm": {
+      "delete": {
+        "title": "حذف السجل",
+        "message": "هل أنت متأكد من حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء."
+      }
+    },
     "types": {
+      "default": {
+        "title": "معلومات صحية عامة"
+      },
       "bloodType": {
         "title": "فصيلة الدم",
         "empty": "لم يتم تحديد فصيلة الدم",
@@ -401,19 +445,69 @@
         "placeholder": {
           "name": "أدخل اسم المرض",
           "relation": "مثال: الأب، الأم، الجد"
+        },
+        "fields": {
+          "condition": "الحالة المرضية",
+          "relation": "صلة القرابة",
+          "date": "تاريخ التسجيل"
+        },
+        "relations": {
+          "father": "الأب",
+          "mother": "الأم",
+          "sibling": "الأخ/الأخت",
+          "grandparent": "الجد/الجدة"
         }
       },
       "healthConditions": {
         "title": "الحالات الصحية",
         "empty": "لا توجد حالات صحية مسجلة",
+        "status": {
+          "active": "نشطة",
+          "resolved": "متعافي",
+          "unknown": "غير معروف"
+        },
+        "addTitle": "إضافة حالة صحية",
+        "editTitle": "تعديل حالة صحية",
+        "name": "اسم الحالة",
+        "placeholder": {
+          "name": "أدخل اسم الحالة الصحية"
+        },
+        "fields": {
+          "name": "اسم الحالة",
+          "date": "تاريخ التشخيص",
+          "status": "الحالة الحالية"
+        }
+      },
+      "family-history": {
+        "title": "التاريخ المرضي للعائلة",
+        "empty": "لا يوجد تاريخ مرضي عائلي مسجل",
+        "addTitle": "إضافة تاريخ مرضي",
+        "editTitle": "تعديل تاريخ مرضي",
+        "name": "اسم المرض",
+        "relation": "صلة القرابة",
+        "placeholder": {
+          "name": "أدخل اسم المرض",
+          "relation": "مثال: الأب، الأم، الجد"
+        },
+        "fields": {
+          "relation": "صلة القرابة"
+        }
+      },
+      "health-conditions": {
+        "title": "الحالات الصحية",
+        "empty": "لا توجد حالات صحية مسجلة",
         "addTitle": "إضافة حالة صحية",
         "editTitle": "تعديل حالة صحية",
         "name": "اسم الحالة الصحية",
-        "placeholder": "أدخل اسم الحالة الصحية"
+        "placeholder": {
+          "name": "أدخل اسم الحالة الصحية"
+        }
       }
     },
     "bloodTypes": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
     "form": {
+      "addTitle": "إضافة سجل طبي",
+      "editTitle": "تعديل سجل طبي",
       "fields": {
         "condition": "الحالة المرضية",
         "relation": "صلة القرابة",
@@ -453,7 +547,8 @@
       "required": {
         "bloodType": "الرجاء اختيار فصيلة الدم",
         "condition": "الرجاء إدخال اسم الحالة المرضية",
-        "relation": "الرجاء اختيار صلة القرابة"
+        "relation": "الرجاء اختيار صلة القرابة",
+        "type": "نوع المعلومات غير محدد"
       }
     }
   }

@@ -1,35 +1,37 @@
-// src/components/forms/GeneralHealthForm.tsx
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useHealthData } from "../../context/HealthDataContext";
-import { Users, Plus, ArrowRight, Check, AlertTriangle } from "lucide-react";
-import { GeneralHealthFormSkeleton } from "../common/skeletons";
-import { apiService } from "../../services/api/apiService";
 import { useTranslation } from "react-i18next";
+import { useLanguage } from "../../context/LanguageContext";
+import { Users, Plus, Edit2, Trash2, Info, AlertTriangle } from "lucide-react";
+import { GeneralHealthFormSkeleton } from "../common/skeletons";
+import { SectionHeader } from "../common/ui/SectionHeader";
+import { StatusIndicator } from "../common/ui/StatusIndicator";
+import { Alert } from "../common/ui/Alert";
+import { ConfirmDialog } from "../common/ConfirmDialog";
+import { colors } from "../../styles/colors";
+import { twkService } from "../../services/twk/twkService";
 import { FamilyRelation } from "../../types/generalHealth";
-import { SectionHeader } from '../common/ui/SectionHeader';
-import { Alert } from '../common/ui/Alert';
-import { StatusIndicator } from '../common/ui/StatusIndicator';
-import { colors } from '../../styles/colors';
 
 interface GeneralHealthFormProps {
   type?: string;
   title?: string;
 }
 
-
 const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
   type: propType,
   title: propTitle,
 }) => {
   const { t } = useTranslation();
+  const { language } = useLanguage();
   const params = useParams<{ type?: string }>();
   const { healthData, updateData, isLoading } = useHealthData();
 
   // Use prop type or param type
   const type = propType || params.type;
   // Use prop title or generate from type
-  const title = propTitle || getFormTitle(type);
+  const title =
+    propTitle || t(`generalHealth.types.${type || "default"}.title`);
 
   // Form states
   const [mode, setMode] = useState<"view" | "add" | "edit">("view");
@@ -38,47 +40,60 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [generalData, setGeneralData] = useState<any>(null);
   const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    itemId: number | null;
+  }>({
+    isOpen: false,
+    itemId: null,
+  });
 
-  // Get form title based on type
-  function getFormTitle(formType?: string): string {
-    switch (formType) {
-      case "blood-type":
-        return "فصيلة الدم";
-      case "health-conditions":
-        return "الحالات الصحية";
-      case "family-history":
-        return "التاريخ المرضي للعائلة";
-      default:
-        return "معلومات صحية عامة";
-    }
-  }
+  // Blood types from config
+  const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
   // Initialize data from context
   useEffect(() => {
     if (healthData && healthData.general && type) {
-      switch (type) {
-        case "blood-type":
-          setGeneralData(healthData.general.bloodType);
-          break;
-        case "health-conditions":
-          setGeneralData(healthData.general.healthConditions || []);
-          break;
-        case "family-history":
-          setGeneralData(healthData.general.familyHistory || []);
-          break;
+      let data = null;
+
+      if (type === "blood-type") {
+        data = healthData.general.bloodType;
+
+        // If no blood type in healthData, try to get it from TWK
+        if (!data) {
+          const fetchBloodType = async () => {
+            try {
+              const bloodType = await twkService.getUserBloodType();
+              setGeneralData(bloodType);
+            } catch (error) {
+              console.error("Error fetching blood type from TWK:", error);
+            }
+          };
+          fetchBloodType();
+        } else {
+          setGeneralData(data);
+        }
+      } else if (type === "health-conditions") {
+        data = healthData.general.healthConditions || [];
+        setGeneralData(data);
+      } else if (type === "family-history") {
+        data = healthData.general.familyHistory || [];
+        setGeneralData(data);
       }
     }
   }, [healthData, type]);
 
   // Format date to local format
   const formatDate = (dateString: string) => {
-    if (!dateString) return "غير متوفر";
+    if (!dateString) return t("common.notAvailable");
 
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat("ar-SA", {
+    return new Intl.DateTimeFormat(language, {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
+      calendar: "gregory",
     }).format(date);
   };
 
@@ -96,6 +111,8 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
     if (!validateForm()) {
       return;
     }
+
+    setIsSubmitting(true);
 
     // Clear errors
     setFormError(null);
@@ -150,7 +167,8 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
     };
 
     if (!type) {
-      setFormError("نوع المعلومات غير محدد");
+      setFormError(t("generalHealth.validation.required.type"));
+      setIsSubmitting(false);
       return;
     }
 
@@ -172,17 +190,24 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
         setFormSuccess(null);
       }, 1500);
     }
+
+    setIsSubmitting(false);
   };
 
   // Handle deleting an item
-  const handleDeleteItem = async (id: number) => {
-    if (!type || (type !== "health-conditions" && type !== "family-history")) {
-      return;
-    }
+  const handleDeleteClick = (id: number) => {
+    setDeleteConfirm({
+      isOpen: true,
+      itemId: id,
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteConfirm.itemId === null) return;
 
     // Filter out the selected item
     const updatedItems = (generalData as any[]).filter(
-      (item) => item.id !== id
+      (item) => item.id !== deleteConfirm.itemId
     );
 
     // Map type to context property
@@ -190,6 +215,11 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
       "health-conditions": "healthConditions",
       "family-history": "familyHistory",
     };
+
+    if (!type || (type !== "health-conditions" && type !== "family-history")) {
+      setDeleteConfirm({ isOpen: false, itemId: null });
+      return;
+    }
 
     // Update context data
     const success = await updateData(
@@ -200,7 +230,7 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
 
     if (success) {
       setGeneralData(updatedItems);
-      setFormSuccess("تم الحذف بنجاح");
+      setFormSuccess(t("generalHealth.success.delete"));
       sessionStorage.removeItem("dashboardData"); // Clear cached data
 
       // Clear success message after delay
@@ -208,6 +238,8 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
         setFormSuccess(null);
       }, 1500);
     }
+
+    setDeleteConfirm({ isOpen: false, itemId: null });
   };
 
   // Handle selecting an item for editing
@@ -227,25 +259,25 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
     switch (type) {
       case "blood-type":
         if (!formValues.bloodType) {
-          setFormError("الرجاء اختيار فصيلة الدم");
+          setFormError(t("generalHealth.validation.required.bloodType"));
           return false;
         }
         break;
 
       case "health-conditions":
-        if (!formValues.name || !formValues.name.trim()) {
-          setFormError("الرجاء إدخال اسم الحالة الصحية");
+        if (!formValues.name?.trim()) {
+          setFormError(t("generalHealth.validation.required.condition"));
           return false;
         }
         break;
 
       case "family-history":
         if (!formValues.name?.trim()) {
-          setFormError(t("validation.required.name"));
+          setFormError(t("generalHealth.validation.required.condition"));
           return false;
         }
         if (!formValues.relation) {
-          setFormError(t("validation.required.relation"));
+          setFormError(t("generalHealth.validation.required.relation"));
           return false;
         }
         break;
@@ -254,205 +286,203 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
     return true;
   };
 
-  // Render view mode
-  const renderViewMode = () => {
-    if (type === "blood-type") {
-      return (
-        <div>
-          {/* Header with edit button */}
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold">{title}</h2>
-            <button
-              onClick={() => {
-                setMode("add");
-                setFormValues({ bloodType: generalData || "" });
-              }}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md"
-            >
-              {t('actions.update')}
-            </button>
-          </div>
+  // Render blood type view
+  const renderBloodTypeView = () => (
+    <div>
+      <SectionHeader
+        title={t("generalHealth.types.bloodType.title")}
+        action={
+          <button
+            onClick={() => {
+              setMode("add");
+              setFormValues({ bloodType: generalData || "" });
+            }}
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors flex items-center"
+          >
+            {generalData ? t("actions.update") : t("actions.add")}
+          </button>
+        }
+      />
 
-          {/* Success message */}
-          {formSuccess && (
-            <div className="mb-6 p-3 bg-green-50 text-green-700 rounded-md flex items-center">
-              <Check size={16} className="ml-2" />
-              {formSuccess}
-            </div>
-          )}
+      {formSuccess && <Alert type="success" message={formSuccess} />}
 
-          {/* Blood type display */}
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-            {generalData ? (
-              <div className="text-center">
-                <span className="text-4xl font-bold">{generalData}</span>
-                <p className="mt-4 text-gray-600">فصيلة الدم الخاصة بك</p>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Users size={40} className="mx-auto text-gray-300 mb-3" />
-                <p className="text-gray-500">لم يتم تحديد فصيلة الدم</p>
-                <button
-                  onClick={() => setMode("add")}
-                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md"
-                >
-                  تحديد فصيلة الدم
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Blood type information */}
-          <div className="mt-6 bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-            <h3 className="text-lg font-medium mb-4">معلومات عن فصائل الدم</h3>
-            <p className="text-gray-600 mb-2">
-              معرفة فصيلة الدم الخاصة بك أمر ضروري للطوارئ الطبية وعمليات نقل
-              الدم.
+      <div className={`mb-6 p-6 ${colors.background.secondary} rounded-lg`}>
+        {generalData ? (
+          <div className="text-center">
+            <span className={`text-4xl font-bold ${colors.text.primary}`}>
+              {generalData}
+            </span>
+            <p className={`mt-4 ${colors.text.secondary}`}>
+              {t("generalHealth.types.bloodType.description")}
             </p>
           </div>
-        </div>
-      );
-    } else {
-      // Health conditions or family history
-      return (
-        <div>
-          {/* Header with add button */}
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold">{title}</h2>
+        ) : (
+          <div className="text-center py-8">
+            <Users
+              size={40}
+              className={`mx-auto ${colors.text.tertiary} mb-3`}
+            />
+            <p className={colors.text.secondary}>
+              {t("generalHealth.types.bloodType.empty")}
+            </p>
             <button
-              onClick={() => {
-                setMode("add");
-                setFormValues({});
-              }}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md flex items-center"
+              onClick={() => setMode("add")}
+              className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
             >
-              <Plus size={16} className="ml-1" />
-              إضافة
+              {t("generalHealth.types.bloodType.select")}
             </button>
           </div>
-
-          {/* Success message */}
-          {formSuccess && (
-            <div className="mb-6 p-3 bg-green-50 text-green-700 rounded-md flex items-center">
-              <Check size={16} className="ml-2" />
-              {formSuccess}
-            </div>
-          )}
-
-          {/* Items list */}
-          {!Array.isArray(generalData) || generalData.length === 0 ? (
-            <div className="text-center py-10 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <Users size={40} className="mx-auto text-gray-300 mb-3" />
-              <p className="text-gray-500">
-                {type === "health-conditions"
-                  ? "لا توجد حالات صحية مسجلة"
-                  : "لا يوجد تاريخ مرضي عائلي مسجل"}
-              </p>
-              <button
-                onClick={() => setMode("add")}
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md inline-flex items-center"
-              >
-                <Plus size={16} className="ml-1" />
-                إضافة
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {generalData.map((item: any) => (
-                <div
-                  key={item.id}
-                  className="p-4 bg-white dark:bg-gray-800  rounded-lg shadow-sm border border-gray-100"
-                >
-                  <div className="flex justify-between">
-                    <div>
-                      <h3 className="font-medium">{item.name}</h3>
-                      {type === "family-history" && item.relation && (
-                        <p className="text-sm text-gray-600">
-                          صلة القرابة: {item.relation}
-                        </p>
-                      )}
-                      <p className="text-sm text-gray-500">
-                        تاريخ التسجيل: {formatDate(item.date)}
-                      </p>
-                    </div>
-                    <div className="flex items-center">
-                      <button
-                        onClick={() => handleEditItem(item)}
-                        className="p-1 text-blue-500 hover:text-blue-700 ml-2"
-                      >
-                        تعديل
-                      </button>
-                      <button
-                        onClick={() => handleDeleteItem(item.id)}
-                        className="p-1 text-red-500 hover:text-red-700"
-                      >
-                        حذف
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      );
-    }
-  };
-
-  // Render add/edit form for blood type
-  const renderBloodTypeForm = () => (
-    <div>
-      {/* Header with back button */}
-      <div className="flex items-center mb-6">
-        <button
-          onClick={() => {
-            setMode("view");
-            setFormValues({});
-            setFormError(null);
-          }}
-          className="p-2 rounded-full hover:bg-gray-100"
-        >
-          <ArrowRight size={20} />
-        </button>
-        <h2 className="text-xl font-bold mr-2">تحديد فصيلة الدم</h2>
+        )}
       </div>
 
-      {/* Error message */}
-      {formError && (
-        <div className="mb-6 p-3 bg-red-50 text-red-700 rounded-md flex items-center">
-          <AlertTriangle size={16} className="ml-2" />
-          {formError}
-        </div>
-      )}
+      {/* Blood type information */}
+      <div className={`p-6 ${colors.background.secondary} rounded-lg`}>
+        <h3 className={`text-lg font-medium mb-4 ${colors.text.primary}`}>
+          {t("generalHealth.types.bloodType.info.title")}
+        </h3>
+        <p className={colors.text.secondary}>
+          {t("generalHealth.types.bloodType.info.description")}
+        </p>
+      </div>
+    </div>
+  );
 
-      {/* Success message */}
-      {formSuccess && (
-        <div className="mb-6 p-3 bg-green-50 text-green-700 rounded-md flex items-center">
-          <Check size={16} className="ml-2" />
-          {formSuccess}
+  // Render health conditions or family history view
+  const renderItemsListView = () => (
+    <div>
+      <SectionHeader
+        title={t(`generalHealth.types.${type}.title`)}
+        action={
+          <button
+            onClick={() => {
+              setMode("add");
+              setFormValues({});
+            }}
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md flex items-center transition-colors"
+          >
+            <Plus size={16} className="rtl:ml-2 ltr:mr-2" />
+            {t("actions.add")}
+          </button>
+        }
+      />
+
+      {formSuccess && <Alert type="success" message={formSuccess} />}
+
+      {/* Items list */}
+      {!Array.isArray(generalData) || generalData.length === 0 ? (
+        <div
+          className={`text-center py-10 ${colors.background.secondary} rounded-lg`}
+        >
+          <Users size={40} className={`mx-auto ${colors.text.tertiary} mb-3`} />
+          <p className={colors.text.secondary}>
+            {t(`generalHealth.types.${type}.empty`)}
+          </p>
+          <button
+            onClick={() => setMode("add")}
+            className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md inline-flex items-center transition-colors"
+          >
+            <Plus size={16} className="rtl:ml-2 ltr:mr-2" />
+            {t("actions.add")}
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {generalData.map((item: any) => (
+            <div
+              key={item.id}
+              className={`
+                p-4 rounded-lg shadow-sm border
+                ${colors.background.primary}
+                ${colors.border.primary}
+                transition-colors
+              `}
+            >
+              <div className="flex justify-between">
+                <div>
+                  <h3 className={`font-medium ${colors.text.primary}`}>
+                    {item.name}
+                  </h3>
+                  {type === "family-history" && item.relation && (
+                    <p className={`text-sm ${colors.text.secondary}`}>
+                      {t("generalHealth.types.familyHistory.fields.relation")}:{" "}
+                      {item.relation}
+                    </p>
+                  )}
+                  <p className={`text-sm ${colors.text.tertiary}`}>
+                    {t("generalHealth.form.recordDate")}:{" "}
+                    {formatDate(item.date)}
+                  </p>
+                </div>
+                <div className="flex items-center">
+                  <button
+                    onClick={() => handleEditItem(item)}
+                    className={`p-2 hover:${colors.background.tertiary} ${colors.text.tertiary} transition-colors rounded-full`}
+                    aria-label={t("actions.edit")}
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(item.id)}
+                    className={`p-2 hover:${colors.background.tertiary} text-red-500 transition-colors rounded-full`}
+                    aria-label={t("actions.delete")}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
+    </div>
+  );
+
+  // Render blood type form
+  const renderBloodTypeForm = () => (
+    <div>
+      <SectionHeader
+        title={t("generalHealth.types.bloodType.select")}
+        back={() => {
+          setMode("view");
+          setFormValues({});
+          setFormError(null);
+        }}
+      />
+
+      {formError && <Alert type="error" message={formError} />}
+
+      {formSuccess && <Alert type="success" message={formSuccess} />}
 
       {/* Blood type selection */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          اختر فصيلة الدم
+        <label
+          className={`block text-sm font-medium ${colors.text.secondary} mb-2`}
+        >
+          {t("generalHealth.form.fields.selectBloodType")}
         </label>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {bloodTypes.map((bloodType) => (
             <div
               key={bloodType}
               className={`
-                p-3 border rounded-md cursor-pointer text-center
+                p-3 border rounded-md cursor-pointer text-center transition-colors
                 ${
                   formValues.bloodType === bloodType
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200"
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-400"
+                    : `${colors.border.primary} ${colors.background.primary}`
                 }
               `}
               onClick={() => handleInputChange("bloodType", bloodType)}
             >
-              <span className="text-lg font-medium">{bloodType}</span>
+              <span
+                className={`text-lg font-medium ${
+                  formValues.bloodType === bloodType
+                    ? "text-blue-700 dark:text-blue-300"
+                    : colors.text.primary
+                }`}
+              >
+                {bloodType}
+              </span>
             </div>
           ))}
         </div>
@@ -462,101 +492,101 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
       <div className="flex justify-end">
         <button
           onClick={handleSubmit}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md"
-          disabled={isLoading}
+          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors disabled:opacity-50"
+          disabled={isSubmitting}
         >
-          {isLoading ? "جاري الحفظ..." : "حفظ"}
+          {isSubmitting ? t("actions.saving") : t("actions.save")}
         </button>
       </div>
     </div>
   );
 
-  // Render add/edit form for health conditions or family history
+  // Render health condition or family history form
   const renderItemForm = () => (
     <div>
-      {/* Header with back button */}
-      <div className="flex items-center mb-6">
-        <button
-          onClick={() => {
-            setMode("view");
-            setFormValues({});
-            setSelectedItem(null);
-            setFormError(null);
-          }}
-          className="p-2 rounded-full hover:bg-gray-100"
-        >
-          <ArrowRight size={20} />
-        </button>
-        <h2 className="text-xl font-bold mr-2">
-          {mode === "add"
-            ? type === "health-conditions"
-              ? "إضافة حالة صحية"
-              : "إضافة تاريخ مرضي"
-            : type === "health-conditions"
-            ? "تعديل حالة صحية"
-            : "تعديل تاريخ مرضي"}
-        </h2>
-      </div>
+      <SectionHeader
+        title={t(
+          `generalHealth.types.${type}.${
+            mode === "add" ? "addTitle" : "editTitle"
+          }`
+        )}
+        back={() => {
+          setMode("view");
+          setFormValues({});
+          setSelectedItem(null);
+          setFormError(null);
+        }}
+      />
 
-      {/* Error message */}
-      {formError && (
-        <div className="mb-6 p-3 bg-red-50 text-red-700 rounded-md flex items-center">
-          <AlertTriangle size={16} className="ml-2" />
-          {formError}
-        </div>
-      )}
+      {formError && <Alert type="error" message={formError} />}
 
-      {/* Success message */}
-      {formSuccess && (
-        <div className="mb-6 p-3 bg-green-50 text-green-700 rounded-md flex items-center">
-          <Check size={16} className="ml-2" />
-          {formSuccess}
-        </div>
-      )}
+      {formSuccess && <Alert type="success" message={formSuccess} />}
 
-      {/* Name input */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {type === "health-conditions" ? "اسم الحالة الصحية" : "اسم المرض"}
-        </label>
-        <input
-          type="text"
-          value={formValues.name || ""}
-          onChange={(e) => handleInputChange("name", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
-          placeholder={
-            type === "health-conditions"
-              ? "أدخل اسم الحالة الصحية"
-              : "أدخل اسم المرض"
-          }
-        />
-      </div>
-
-      {/* Relation input for family history */}
-      {type === "family-history" && (
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            صلة القرابة
+      <div className="space-y-6">
+        {/* Name input */}
+        <div>
+          <label
+            className={`block text-sm font-medium ${colors.text.secondary} mb-1`}
+          >
+            {t(`generalHealth.types.${type}.name`)}
           </label>
           <input
             type="text"
-            value={formValues.relation || ""}
-            onChange={(e) => handleInputChange("relation", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            placeholder="مثال: الأب، الأم، الجد"
+            value={formValues.name || ""}
+            onChange={(e) => handleInputChange("name", e.target.value)}
+            className={`
+              w-full px-3 py-2 rounded-md
+              ${colors.background.primary}
+              ${colors.text.primary}
+              ${colors.border.primary}
+              border focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+              transition-colors
+            `}
+            placeholder={t(`generalHealth.types.${type}.placeholder.name`)}
           />
         </div>
-      )}
 
-      {/* Submit button */}
-      <div className="flex justify-end">
-        <button
-          onClick={handleSubmit}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md"
-          disabled={isLoading}
-        >
-          {isLoading ? "جاري الحفظ..." : mode === "add" ? "إضافة" : "تحديث"}
-        </button>
+        {/* Relation input for family history */}
+        {type === "family-history" && (
+          <div>
+            <label
+              className={`block text-sm font-medium ${colors.text.secondary} mb-1`}
+            >
+              {t("generalHealth.types.familyHistory.relation")}
+            </label>
+            <input
+              type="text"
+              value={formValues.relation || ""}
+              onChange={(e) => handleInputChange("relation", e.target.value)}
+              className={`
+                w-full px-3 py-2 rounded-md
+                ${colors.background.primary}
+                ${colors.text.primary}
+                ${colors.border.primary}
+                border focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                transition-colors
+              `}
+              placeholder={t(
+                "generalHealth.types.familyHistory.placeholder.relation"
+              )}
+            />
+          </div>
+        )}
+
+        {/* Submit button */}
+        <div className="flex justify-end">
+          <button
+            onClick={handleSubmit}
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors disabled:opacity-50"
+            disabled={isSubmitting}
+          >
+            {isSubmitting
+              ? t("actions.saving")
+              : mode === "add"
+              ? t("actions.add")
+              : t("actions.update")}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -567,18 +597,32 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800  rounded-lg shadow-sm p-6">
+    <div className={`${colors.background.primary} rounded-lg shadow-sm p-6`}>
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, itemId: null })}
+        onConfirm={handleDeleteConfirm}
+        title={t("generalHealth.confirm.delete.title")}
+        message={t("generalHealth.confirm.delete.message")}
+      />
+
       {isLoading && (
-        <div className="fixed inset-0 bg-white bg-opacity-80 z-50 flex items-center justify-center">
-          <div className="flex flex-col items-center">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div
+            className={`flex flex-col items-center ${colors.background.primary} p-6 rounded-lg`}
+          >
             <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
-            <p className="mt-4 text-gray-600">جاري معالجة البيانات...</p>
+            <p className={`mt-4 ${colors.text.secondary}`}>
+              {t("generalHealth.form.loading")}
+            </p>
           </div>
         </div>
       )}
 
       {mode === "view"
-        ? renderViewMode()
+        ? type === "blood-type"
+          ? renderBloodTypeView()
+          : renderItemsListView()
         : type === "blood-type"
         ? renderBloodTypeForm()
         : renderItemForm()}

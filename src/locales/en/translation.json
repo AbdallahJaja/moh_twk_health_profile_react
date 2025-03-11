@@ -120,7 +120,8 @@
       "blood-glucose": "Blood Glucose",
       "waist": "Waist Circumference",
       "weight": "Weight",
-      "height": "Height"
+      "height": "Height",
+      "default": "Vital Signs"
     },
     "form": {
       "addTitle": "Add {{type}} Measurement",
@@ -240,7 +241,8 @@
   "allergies": {
     "types": {
       "default": {
-        "title": "Allergies"
+        "title": "Allergies",
+        "placeholder": "Enter allergy name"
       },
       "medicine": {
         "title": "Medicine Allergies",
@@ -255,7 +257,8 @@
         "placeholder": "Enter material name"
       },
       "doctor": {
-        "title": "Doctor Recorded Allergies"
+        "title": "Doctor Recorded Allergies",
+        "placeholder": "Enter allergy name"
       }
     },
     "severity": {
@@ -273,10 +276,12 @@
       "addTitle": "Add New Allergy",
       "editTitle": "Edit Allergy",
       "nameLabel": "Allergy Name",
-       "severityLabel": "Severity",
+      "severityLabel": "Severity",
       "selectSeverity": "Select Severity"
     },
-    "noData": "No allergies recorded",
+    "list": {
+      "empty": "No allergies recorded"
+    },
     "dateRecorded": "Date Recorded",
     "success": {
       "add": "Allergy added successfully",
@@ -293,42 +298,43 @@
       "required": {
         "name": "Please enter allergy name",
         "severity": "Please select severity",
-        "type": "Allergy type is not specified"
+        "type": "Allergy type is not specified",
+        "allergyType": "Allergy type is required"
       }
     },
     "suggestions": {
       "medicine": [
-       "Penicillin",
-       "Aspirin",
-       "Ibuprofen",
-       "Amoxicillin",
-       "Cephalosporins",
-       "Sulfonamides"
+        "Penicillin",
+        "Aspirin",
+        "Ibuprofen",
+        "Amoxicillin",
+        "Cephalosporins",
+        "Sulfonamides"
       ],
       "food": [
-       "Peanuts",
-       "Shellfish",
-       "Eggs",
-       "Milk",
-       "Wheat",
-       "Soy"
+        "Peanuts",
+        "Shellfish",
+        "Eggs",
+        "Milk",
+        "Wheat",
+        "Soy"
       ],
       "material": [
-       "Latex",
-       "Nickel",
-       "Rubber",
-       "Wool",
-       "Dust",
-       "Pollen"
+        "Latex",
+        "Nickel",
+        "Rubber",
+        "Wool",
+        "Dust",
+        "Pollen"
       ]
     }
   },
-   "validation": {
+  "validation": {
     "required": {
       "allergyType": "Allergy type is required",
-      "name": "Please enter allergy name",
+      "name": "Please enter a name",
       "severity": "Please select severity",
-      "type": "Please select allergy type"
+      "type": "Please select a type"
     }
   },
   "common": {
@@ -398,10 +404,16 @@
       "add": "Medication added successfully",
       "update": "Medication updated successfully",
       "delete": "Medication deleted successfully"
+    },
+    "names": {
+      "paracetamol": "Paracetamol"
     }
   },
   "generalHealth": {
     "types": {
+      "default": {
+        "title": "General Health Information"
+      },
       "bloodType": {
         "title": "Blood Type",
         "empty": "Blood type not recorded",
@@ -436,27 +448,56 @@
           "date": "Record Date"
         }
       },
-      "conditions": {
-        "title": "Medical Conditions",
-        "empty": "No medical conditions recorded",
+      "healthConditions": {
+        "title": "Health Conditions",
+        "empty": "No health conditions recorded",
         "status": {
           "active": "Active",
           "resolved": "Resolved",
           "unknown": "Unknown"
-        }
-      },
-      "healthConditions": {
-        "title": "Health Conditions",
-        "empty": "No health conditions recorded",
+        },
         "addTitle": "Add Health Condition",
         "editTitle": "Edit Health Condition",
         "name": "Condition Name",
-        "placeholder": "Enter condition name",
+        "placeholder": {
+          "name": "Enter condition name"
+        },
         "fields": {
           "name": "Condition Name",
           "date": "Diagnosis Date",
           "status": "Current Status"
         }
+      },
+      "family-history": {
+        "title": "Family Medical History",
+        "empty": "No family medical history recorded",
+        "addTitle": "Add Family History",
+        "editTitle": "Edit Family History",
+        "name": "Disease Name",
+        "relation": "Relation",
+        "placeholder": {
+          "name": "Enter disease name",
+          "relation": "e.g. Father, Mother, Grandfather"
+        },
+        "fields": {
+          "relation": "Family Relation"
+        }
+      },
+      "health-conditions": {
+        "title": "Health Conditions",
+        "empty": "No health conditions recorded",
+        "addTitle": "Add Health Condition",
+        "editTitle": "Edit Health Condition",
+        "name": "Condition Name",
+        "placeholder": {
+          "name": "Enter condition name"
+        }
+      }
+    },
+    "confirm": {
+      "delete": {
+        "title": "Delete Record",
+        "message": "Are you sure you want to delete this record? This action cannot be undone."
       }
     },
     "bloodTypes": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
@@ -503,7 +544,8 @@
       "required": {
         "bloodType": "Please select a blood type",
         "condition": "Please enter condition name",
-        "relation": "Please select family relation"
+        "relation": "Please select family relation",
+        "type": "Information type is required"
       }
     }
   }
