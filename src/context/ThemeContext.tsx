@@ -22,7 +22,11 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const initializeTheme = async () => {
     try {
       const deviceInfo = await twkService.getDeviceInfo();
-      updateTheme(deviceInfo.theme);
+      if (deviceInfo.theme == "2" || deviceInfo.theme == 2) {
+        updateTheme('dark');
+      } else {
+        updateTheme('light');
+      }
     } catch (error) {
       console.error('Error initializing theme:', error);
       const storedTheme = localStorage.getItem('theme') as Theme || 'light';

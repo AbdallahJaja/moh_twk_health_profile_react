@@ -1,6 +1,7 @@
 // src/App.tsx
 import React from "react";
 import { Routes, Route } from "react-router-dom";
+import { AnalyticsProvider } from "./context/AnalyticsContext";
 
 // Import components
 import Dashboard from "./components/Dashboard";
@@ -28,6 +29,7 @@ const App: React.FC = () => {
       <ThemeProvider>
         <LanguageProvider>
           <HealthDataProvider>
+             <AnalyticsProvider>
             <div className="min-h-screen bg-[#f9fafb] dark:bg-[#1f2937] font-sans transition-colors duration-200">
               <Header />
 
@@ -109,6 +111,7 @@ const App: React.FC = () => {
                 </Routes>
               </main>
             </div>
+            </AnalyticsProvider>
           </HealthDataProvider>
         </LanguageProvider>
       </ThemeProvider>

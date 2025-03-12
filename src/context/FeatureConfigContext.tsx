@@ -7,31 +7,21 @@ import React, {
 } from "react";
 import { apiService } from "../services/api/apiService";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import { API_CONFIG } from "../services/api/config";
 
 // Define the structure of our feature configuration
 export interface FeatureConfig {
   allowAllActions: boolean;
-  enableTwkIntegration: boolean;
-  enableOfflineMode: boolean;
 }
 
-// Define app configuration including features and other settings
 export interface AppConfig {
   features: FeatureConfig;
-  version: string;
-  supportedLanguages: string[];
 }
 
 // Default configuration values
 const DEFAULT_CONFIG: AppConfig = {
   features: {
     allowAllActions: false,
-    enableTwkIntegration: true,
-    enableOfflineMode: false,
-  },
-  version: "1.0.0",
-  supportedLanguages: ["ar", "en"],
+  }
 };
 
 // Context type definition
@@ -98,16 +88,11 @@ export const FeatureConfigProvider: React.FC<FeatureConfigProviderProps> = ({
   // Function to check if a specific action is allowed
   const canPerformAction = (
     action: "add" | "edit" | "delete",
-    entityType?: string
   ): boolean => {
     // Check if all actions are allowed via the feature flag
     if (configData.features.allowAllActions) {
       return true;
     }
-
-    // If specific entity permissions needed, they could be checked here
-    // For example: if (entityType === 'allergies' && action === 'edit') { /* specific rule */ }
-
     // Default permissions - enable only add and edit, but not delete
     return action === "add" || action === "edit";
   };

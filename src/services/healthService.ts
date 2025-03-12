@@ -1,12 +1,6 @@
 // Health Service - For interacting with Tawakkalna health APIs
 import { apiService } from './api/apiService';
 
-
-// // Utility function to create a document reference number
-// const generateReferenceNumber = () => {
-//   return `health_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-// };
-
 /**
  * Fetch health data from Tawakkalna
  * @returns {Promise<Object>} Health data object

@@ -446,7 +446,7 @@
       "path": "/device_info",
       "return": {
         "language": "en",
-        "theme": "dark",
+        "theme": "1",
         "deviceType": "mobile",
         "locale": "ar-SA",
         "platform": "ios"

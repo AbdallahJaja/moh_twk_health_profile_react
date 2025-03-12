@@ -349,7 +349,9 @@
     }
   },
   "common": {
-    "notAvailable": "Not available"
+    "notAvailable": "Not available",
+    "retry": "Try Again",
+    "no_data": "No data available"
   },
   "history": {
     "title": "Previous Measurements",
@@ -418,6 +420,13 @@
     },
     "names": {
       "paracetamol": "Paracetamol"
+    },
+    "duration": {
+      "days": "{{count}} days",
+      "weeks": "{{count}} weeks"
+    },
+    "errors": {
+      "loadFailed": "Failed to load medications. Please try again."
     }
   },
   "generalHealth": {
@@ -558,6 +567,28 @@
         "relation": "Please select family relation",
         "type": "Information type is required"
       }
+    }
+  },
+  "healthCenters": {
+    "title": "Health Centers",
+    "km": "km",
+    "workingHours": "Working Hours",
+    "phone": "Phone",
+    "availableServices": "Available Services",
+    "directions": "Directions",
+    "call": "Call",
+    "assignedCenter": "This is your assigned health center based on your registered address",
+    "errors": {
+      "loadFailed": "Failed to load health center data. Please try again.",
+      "noData": "No health center information available."
+    },
+    "services": {
+      "emergency": "Emergency",
+      "outpatient": "Outpatient Clinics",
+      "xray": "Radiology",
+      "familyMedicine": "Family Medicine",
+      "laboratory": "Laboratory",
+      "pharmacy": "Pharmacy"
     }
   },
   "healthRecord": {

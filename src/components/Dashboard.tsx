@@ -9,6 +9,7 @@ import * as Icons from "lucide-react";
 import { apiService } from "../services/api/apiService";
 import { DashboardSkeleton } from './common/skeletons/DashboardSkeleton';
 import { twkService } from '../services/twk/twkService';
+import { useAnalytics } from "../hooks/useAnalytics"; // Add this import
 
 // Type for dynamic icon component
 type IconName = keyof typeof Icons;
@@ -48,10 +49,15 @@ const Dashboard: React.FC = () => {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string>('');
+  const [userName, setUserName] = useState<string>("");
   const [userBirthDate, setUserBirthDate] = useState<Date | null>(null);
-  const [firstName, setFirstName] = useState<string>('');
+  const [firstName, setFirstName] = useState<string>("");
+  const { trackPageView, trackClick } = useAnalytics(); // Add analytics hook
 
+  useEffect(() => {
+    trackPageView("Dashboard", "/dashboard");
+  }, [trackPageView]);
+    
   // Fetch dashboard data
   useEffect(() => {
     const cachedData = sessionStorage.getItem("dashboardData");
@@ -67,7 +73,10 @@ const Dashboard: React.FC = () => {
         const response = await apiService.getDashboard();
         if (response.success && response.data) {
           setDashboardData(response.data);
-          sessionStorage.setItem("dashboardData", JSON.stringify(response.data));
+          sessionStorage.setItem(
+            "dashboardData",
+            JSON.stringify(response.data)
+          );
           setError(null);
         } else {
           setError(response.error || t("errors.fetchFailed"));
@@ -94,7 +103,7 @@ const Dashboard: React.FC = () => {
         twkService.getUserFullName(),
         twkService.getUserBirthDate(),
       ]);
-      
+
       // Set name based on current language
       const name =
         language === "ar"
@@ -108,7 +117,7 @@ const Dashboard: React.FC = () => {
       setFirstName(firstName);
       setUserBirthDate(birthDate);
     } catch (error) {
-      console.error('Error loading user data:', error);
+      console.error("Error loading user data:", error);
     } finally {
       setLoading(false);
     }
@@ -145,6 +154,11 @@ const Dashboard: React.FC = () => {
 
   // Navigation handlers
   const navigateToSection = (section: string, type: string = "") => {
+    trackClick("dashboard_navigation", "section_click", {
+      section_id: section,
+      type: type || "main",
+      user_id: dashboardData?.userProfile?.id, // Include contextual user data if available
+    });
     navigate(`/${section}${type ? "/" + type : ""}`);
   };
 

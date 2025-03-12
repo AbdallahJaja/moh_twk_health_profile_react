@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 const HealthRecord: React.FC = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const isRTL = i18n.dir() === 'rtl';
+const { trackPageView, trackClick } = useAnalytics(); // Add analytics hook
 
+  useEffect(() => {
+    trackPageView("HealthRecord", "/health-record");
+  }, [trackPageView]);
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
       <div className="flex items-center mb-6">

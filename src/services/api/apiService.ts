@@ -1,4 +1,3 @@
-import { dashboardSections, userProfile } from "../../data/mockData";
 import axios from "axios";
 import { API_CONFIG } from "./config";
 import { setupCache, buildStorage } from "axios-cache-interceptor";
@@ -9,21 +8,16 @@ import {
   GeneralHealthData,
   Allergy,
   Medication,
+  HealthCondition,
+  FamilyHistory
 } from "../../types/generalHealth";
-
-// Add types for health conditions
-interface HealthCondition {
-  id: number;
-  name: string;
-  date: string;
-}
-
-interface FamilyHistory {
-  id: number;
-  name: string;
-  relation: string;
-  date: string;
-}
+import { 
+  dashboardSections, 
+  userProfile, 
+  mockConfig,
+  mockHealthCenters,
+  mockMedications // Import the medications mock data
+} from "../../data/mockData";
 
 // Cache storage configuration
 const cacheStorage = buildStorage({
@@ -32,17 +26,6 @@ const cacheStorage = buildStorage({
   remove: async (key) => localStorage.removeItem(key),
   clear: async () => localStorage.clear(),
 });
-
-// Default mock config
-const mockConfig: AppConfig = {
-  features: {
-    allowAllActions: env.ALLOW_ALL_ACTIONS || false,
-    enableTwkIntegration: true,
-    enableOfflineMode: false,
-  },
-  version: "1.0.0",
-  supportedLanguages: ["ar", "en"],
-};
 
 // Mock data store
 const mockStore = {
@@ -58,6 +41,11 @@ const mockStore = {
     healthConditions: [] as HealthCondition[],
     familyHistory: [] as FamilyHistory[],
   },
+  healthCenters: [...mockHealthCenters],
+  medications: {
+    current: [...mockMedications.current],
+    previous: [...mockMedications.previous]
+  }
 };
 
 // Create axios instance
@@ -237,23 +225,57 @@ export const apiService = {
   }): Promise<ApiResponse> => {
     if (env.USE_MOCK) {
       await mockDelay();
+      
+      // Get centers from mock store
+      const centers = mockStore.healthCenters;
+      
+      if (!centers || centers.length === 0) {
+        return {
+          success: false,
+          message: "No health centers found"
+        };
+      }
+      
+      // Calculate distances to find nearest center
+      // Using Haversine formula would be ideal, but for mock data we'll use a simpler approach
+      const findNearest = (centers: any[], location: { latitude: number; longitude: number }) => {
+        // Simple distance calculation for mock data
+        return centers.map(center => {
+          const latDiff = Math.abs(center.location.latitude - location.latitude);
+          const lngDiff = Math.abs(center.location.longitude - location.longitude);
+          // Crude distance calculation, just for mock data
+          const calculatedDistance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111; // Approx km
+          return {
+            ...center,
+            distance: Number(calculatedDistance.toFixed(1))
+          };
+        }).sort((a, b) => a.distance - b.distance)[0];
+      };
+      
+      const nearestCenter = findNearest(centers, location);
+      
       return {
         success: true,
-        data: {
-          id: 1,
-          name: "Mock Health Center",
-          distance: "2.5km",
-          address: "123 Healthcare St.",
-          coordinates: {
-            latitude: location.latitude + 0.01,
-            longitude: location.longitude + 0.01,
-          },
-        },
+        data: nearestCenter
       };
     }
+    
     const response = await api.get("/health-centers/nearest", {
       params: location,
     });
+    return response.data;
+  },
+  getMedications: async (type: 'current' | 'previous'): Promise<ApiResponse> => {
+    if (env.USE_MOCK) {
+      await mockDelay();
+      
+      return {
+        success: true,
+        data: mockStore.medications[type]
+      };
+    }
+    
+    const response = await api.get(`/medications/${type}`);
     return response.data;
   },
 };

@@ -13,7 +13,7 @@ import { ConfirmDialog } from "../common/ConfirmDialog";
 import { colors } from "../../styles/colors";
 import { twkService } from "../../services/twk/twkService";
 import { FamilyRelation } from "../../types/generalHealth";
-
+import { useAnalytics } from "../../hooks/useAnalytics";
 interface GeneralHealthFormProps {
   type?: string;
   title?: string;
@@ -58,7 +58,11 @@ const GeneralHealthForm: React.FC<GeneralHealthFormProps> = ({
 
   // Blood types from config
   const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+  const { trackPageView, trackClick } = useAnalytics(); // Add analytics hook
 
+  useEffect(() => {
+    trackPageView("GeneralHealthForm", "/general-health-form");
+  }, [trackPageView]);
   // Initialize data from context
   useEffect(() => {
     if (healthData && healthData.general && type) {

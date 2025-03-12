@@ -24,7 +24,7 @@ import { SectionHeader } from "../common/ui/SectionHeader";
 import { StatusIndicator } from "../common/ui/StatusIndicator";
 import { Alert } from "../common/ui/Alert";
 import { ConfirmDialog } from "../common/ConfirmDialog";
-
+import { useAnalytics } from "../../hooks/useAnalytics";
 interface VitalsFormProps {
   type?: string;
   title?: string;
@@ -72,7 +72,11 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
     isOpen: false,
     itemId: null,
   });
+const { trackPageView, trackClick } = useAnalytics(); // Add analytics hook
 
+  useEffect(() => {
+    trackPageView("VitalsForms", "/vitlas-forms/{type}"); // Track page view
+  }, [trackPageView]);
   // Initialize vital data from context
   useEffect(() => {
     if (healthData && healthData.vitals && type) {

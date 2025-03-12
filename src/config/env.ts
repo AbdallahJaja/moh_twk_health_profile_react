@@ -1,5 +1,7 @@
 // src/config/env.ts
 
+import firebase from "firebase/compat/app";
+
 // Function to get boolean env variable
 const getBooleanEnv = (key: string, defaultValue: boolean): boolean => {
   const value = import.meta.env[key];
@@ -26,6 +28,31 @@ export const env = {
   USE_TWK_MOCK: getBooleanEnv("VITE_USE_TWK_MOCK", true),
   ALLOW_ALL_ACTIONS: getBooleanEnv("VITE_ALLOW_ALL_ACTIONS", false),
   LOG_LEVEL: getStringEnv("VITE_LOG_LEVEL", "info"),
+  ENABLE_ANALYTICS: getBooleanEnv("VITE_ENABLE_ANALYTICS", true),
+  firebaseConfig: {
+    apiKey: getStringEnv(
+      "VITE_FIREBASE_API_KEY",
+      "AIzaSyDT4tYWgX2Id0ffvswwBQ9rFOvut9QNQXY"
+    ),
+    authDomain: getStringEnv(
+      "VITE_FIREBASE_AUTH_DOMAIN",
+      "mohtwk-ebf40.firebaseapp.com"
+    ),
+    projectId: getStringEnv("VITE_FIREBASE_PROJECT_ID", "mohtwk-ebf40"),
+    storageBucket: getStringEnv(
+      "VITE_FIREBASE_STORAGE_BUCKET",
+      "mohtwk-ebf40.firebasestorage.app"
+    ),
+    messagingSenderId: getStringEnv(
+      "VITE_FIREBASE_MESSAGING_SENDER_ID",
+      "914599976221"
+    ),
+    appId: getStringEnv(
+      "VITE_FIREBASE_APP_ID",
+      "1:914599976221:web:a31611a3935cf4b70855f4"
+    ),
+    measurementId: getStringEnv("VITE_FIREBASE_MEASUREMENT_ID", "G-TL9YGEZ7BZ"),
+  },
 };
 
 // export const env = {

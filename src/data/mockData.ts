@@ -25,6 +25,127 @@ export interface UserProfile {
   avatarUrl?: string;
 }
 
+// Add HealthCenter interface for typing
+export interface MockHealthCenter {
+  id: number | string;
+  name: string;
+  distance: number | string;
+  address: string;
+  phone: string;
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+  services: string[];
+  workingHours: string;
+}
+
+// Add mockMedications to your existing mockData.ts file
+
+// Import the Medication type if not already imported
+import { Medication } from '../types/generalHealth';
+
+// Define the medications mock data
+export const mockMedications = {
+  current: [
+    {
+      id: 1,
+      name: 'Paracetamol',
+      dose: '500mg',
+      frequency: 'thrice',
+      startDate: '2025-01-15',
+      duration: 10,
+      prescribedBy: 'Dr. Ahmad Saeed',
+      notes: 'Take after meals'
+    },
+    {
+      id: 2,
+      name: 'Amoxicillin',
+      dose: '250mg',
+      frequency: 'twice',
+      startDate: '2025-02-10',
+      duration: 7,
+      prescribedBy: 'Dr. Khalid Mohammed',
+      notes: 'Take 1 hour before meals'
+    }
+  ] as Medication[],
+  previous: [
+    {
+      id: 1,
+      name: 'Ibuprofen',
+      dose: '400mg',
+      frequency: 'asNeeded',
+      startDate: '2024-12-05',
+      endDate: '2024-12-15',
+      prescribedBy: 'Dr. Sarah Ali',
+      notes: 'For pain relief'
+    },
+    {
+      id: 2,
+      name: 'Clarithromycin',
+      dose: '500mg',
+      frequency: 'twice',
+      startDate: '2024-11-20',
+      endDate: '2024-11-30',
+      prescribedBy: 'Dr. Mohammed Omar',
+      notes: 'For pneumonia'
+    },
+    {
+      id: 3,
+      name: 'Loratadine',
+      dose: '10mg',
+      frequency: 'once',
+      startDate: '2024-10-15',
+      endDate: '2024-11-15',
+      prescribedBy: 'Dr. Ahmad Saeed',
+      notes: 'For seasonal allergies'
+    }
+  ] as Medication[]
+};
+
+// Add health centers to mock data exports
+export const mockHealthCenters: MockHealthCenter[] = [
+  {
+    id: 1,
+    name: "Al Habib Medical Center",
+    distance: 2.5,
+    address: "King Fahd Road, Al Olaya, Riyadh",
+    phone: "0118324000",
+    location: {
+      latitude: 24.7136,
+      longitude: 46.6753
+    },
+    services: ["emergency", "outpatient", "xray", "familyMedicine", "laboratory", "pharmacy"],
+    workingHours: "24/7"
+  },
+  {
+    id: 2,
+    name: "King Faisal Specialist Hospital",
+    distance: 4.2,
+    address: "Zahrawi Street, Al Maather, Riyadh",
+    phone: "0114647272",
+    location: {
+      latitude: 24.6911,
+      longitude: 46.6740
+    },
+    services: ["emergency", "outpatient", "xray", "familyMedicine", "laboratory", "pharmacy", "specialized"],
+    workingHours: "24/7"
+  }
+];
+
+// Default mock config
+export const mockConfig = {
+  features: {
+    // For Vite
+    allowAllActions: 
+      (import.meta && import.meta.env && import.meta.env.VITE_ALLOW_ALL_ACTIONS === "true") ||
+      false,
+    enableTwkIntegration: true,
+  },
+  version: "1.0.0",
+  supportedLanguages: ["ar", "en"],
+};
+
 export const userProfile: UserProfile = {
   id: '2381026190',
   name: 'عبدالله',

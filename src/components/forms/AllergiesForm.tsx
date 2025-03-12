@@ -23,7 +23,7 @@ import { ConfirmDialog } from '../common/ConfirmDialog';
 import { SectionHeader } from '../common/ui/SectionHeader';
 import { Alert } from '../common/ui/Alert';
 import { colors } from '../../styles/colors';
-
+import { useAnalytics } from "../../hooks/useAnalytics";
 interface AllergiesFormProps {
   type?: string;
   title?: string;
@@ -82,7 +82,11 @@ const AllergiesForm: React.FC<AllergiesFormProps> = ({
   // Add state for filtered suggestions
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const { trackPageView, trackClick } = useAnalytics(); // Add analytics hook
 
+  useEffect(() => {
+    trackPageView("AllergiesForm", "/allergies/form");
+  }, [trackPageView]);
   // Get form title based on type
   function getFormTitle(formType?: string): string {
     return t(`allergies.types.${formType || 'default'}.title`);

@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Pill, ArrowRight, ArrowLeft, AlertTriangle, Clock } from 'lucide-react';
+import { Pill, ArrowRight, ArrowLeft, AlertTriangle, Clock, RotateCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../styles/colors';
+import { apiService } from '../../services/api/apiService';
+import type { Medication } from '../../types/generalHealth';
+import { AnalyticsList, AnalyticsListItem } from "../common/ui/AnalyticsList";
+import { useAnalytics } from "../../hooks/useAnalytics";
 
 interface MedicationsProps {
   type?: 'current' | 'previous';
@@ -19,62 +23,36 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
   const isCurrentType = type === 'current';
   const isRTL = language === 'ar';
   
-  // Sample data for medications
-  const [currentMedications] = useState([
-    {
-      id: 1,
-      name: t('medications.names.paracetamol'),
-      dose: '500mg',
-      frequency: 'thrice', // Using key instead of hardcoded Arabic
-      startDate: '2025-01-15',
-      duration: t('medications.duration.days', { count: 10 }), // Using i18n interpolation
-      doctor: 'Dr. Ahmad Saeed',
-      notes: t('medications.notes.afterMeal')
-    },
-    {
-      id: 2,
-      name: 'أموكسيسيلين',
-      dose: '250 ملغ',
-      frequency: 'مرتين يومياً',
-      startDate: '2025-02-10',
-      duration: '7 أيام',
-      doctor: 'د. خالد محمد',
-      notes: 'يؤخذ قبل الطعام بساعة'
-    }
-  ]);
+  const [medications, setMedications] = useState<Medication[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { trackPageView, trackClick } = useAnalytics(); // Add analytics hook
   
-  const [previousMedications] = useState([
-    {
-      id: 1,
-      name: 'إيبوبروفين',
-      dose: '400 ملغ',
-      frequency: 'عند الحاجة',
-      startDate: '2024-12-05',
-      endDate: '2024-12-15',
-      doctor: 'د. سارة العلي',
-      notes: 'لتسكين الآلام'
-    },
-    {
-      id: 2,
-      name: 'كلاريثروميسين',
-      dose: '500 ملغ',
-      frequency: 'مرتين يومياً',
-      startDate: '2024-11-20',
-      endDate: '2024-11-30',
-      doctor: 'د. محمد العمر',
-      notes: 'للالتهاب الرئوي'
-    },
-    {
-      id: 3,
-      name: 'لوراتادين',
-      dose: '10 ملغ',
-      frequency: 'مرة واحدة يومياً',
-      startDate: '2024-10-15',
-      endDate: '2024-11-15',
-      doctor: 'د. أحمد سعيد',
-      notes: 'للحساسية الموسمية'
-    }
-  ]);
+    useEffect(() => {
+      trackPageView("Medications", "/medications");
+    }, [trackPageView]);
+  // Fetch medications data from API
+  useEffect(() => {
+    const fetchMedications = async () => {
+      try {
+        setLoading(true);
+        const response = await apiService.getMedications(type);
+        
+        if (response.success && response.data) {
+          setMedications(response.data);
+        } else {
+          setError(t('medications.errors.loadFailed'));
+        }
+      } catch (err) {
+        console.error('Error fetching medications:', err);
+        setError(t('medications.errors.loadFailed'));
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchMedications();
+  }, [type, t]);
   
   // Format date using the current language
   const formatDate = (dateString: string) => {
@@ -88,39 +66,44 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
       calendar: 'gregory'
     }).format(date);
   };
-
-  const medications = isCurrentType ? currentMedications : previousMedications;
   
   return (
     <div className={`${colors.background.primary} rounded-lg shadow-sm p-6`}>
       <div className="flex items-center mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 mx-2 transition-colors"
+          className={`p-2 rounded-full hover:${colors.background.tertiary} transition-colors mr-2`}
           aria-label={t("actions.back")}
         >
           {isRTL ? (
-            <ArrowRight
-              size={20}
-              className="text-gray-700 dark:text-gray-200"
-            />
+            <ArrowRight size={20} className={colors.text.primary} />
           ) : (
-            <ArrowLeft size={20} className="text-gray-700 dark:text-gray-200" />
+            <ArrowLeft size={20} className={colors.text.primary} />
           )}
         </button>
-        <h2
-          className={`text-xl font-bold rtl:mr-2 ltr:ml-2 ${colors.text.primary}`}
-        >
+        <h2 className={`text-xl font-bold ${colors.text.primary}`}>
           {t(`medications.types.${type}.title`)}
         </h2>
       </div>
 
-      {medications.length === 0 ? (
-        <div
-          className={`
-          text-center py-10 ${colors.background.secondary} rounded-lg
-        `}
-        >
+      {loading ? (
+        <div className={`${colors.background.secondary} rounded-lg p-6 mb-6 flex justify-center items-center min-h-[200px]`}>
+          <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin dark:border-blue-800 dark:border-t-blue-400"></div>
+        </div>
+      ) : error ? (
+        <div className={`${colors.background.secondary} rounded-lg p-6 mb-6 text-center`}>
+          <AlertTriangle size={32} className="mx-auto mb-4 text-red-500" />
+          <p className={colors.text.secondary}>{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md flex items-center mx-auto"
+          >
+            <RotateCcw size={16} className="mr-2" />
+            {t('common.retry')}
+          </button>
+        </div>
+      ) : medications.length === 0 ? (
+        <div className={`text-center py-10 ${colors.background.secondary} rounded-lg`}>
           <Pill size={40} className={`mx-auto ${colors.text.tertiary} mb-3`} />
           <p className={colors.text.secondary}>
             {t(`medications.types.${type}.empty`)}
@@ -148,8 +131,8 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
                     text-xs px-2 py-1 rounded-full flex items-center
                   `}
                   >
-                    <Clock size={12} className="rtl:ml-1 ltr:mr-1" />
-                    {t("medications.types.current.status")}
+                    <Clock size={12} className={isRTL ? "ml-1" : "mr-1"} />
+                    {t("medications.status.active")}
                   </span>
                 )}
               </div>
@@ -159,14 +142,14 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
                   { key: "dose", value: med.dose },
                   {
                     key: "frequency",
-                    value: t(`medications.frequency.${med.frequency}`),
+                    value: t(`medications.frequency.${med.frequency}`)
                   },
                   { key: "startDate", value: formatDate(med.startDate) },
                   {
                     key: isCurrentType ? "duration" : "endDate",
                     value: isCurrentType
-                      ? med.duration
-                      : formatDate(med.endDate),
+                      ? t('medications.duration.days', { count: med.duration })
+                      : formatDate(med.endDate || '')
                   },
                 ].map(({ key, value }) => (
                   <div key={key}>
@@ -185,7 +168,7 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
                   {t("medications.details.doctor")}:
                 </span>
                 <p className={`text-sm ${colors.text.secondary}`}>
-                  {med.doctor}
+                  {med.prescribedBy || med.doctor}
                 </p>
               </div>
 
@@ -198,7 +181,7 @@ const Medications: React.FC<MedicationsProps> = ({ type: propType }) => {
                 >
                   <AlertTriangle
                     size={16}
-                    className={`${colors.status.warning.text} rtl:ml-2 ltr:mr-2 mt-0.5`}
+                    className={`${colors.status.warning.text} ${isRTL ? "ml-2" : "mr-2"} mt-0.5`}
                   />
                   <div>
                     <span
