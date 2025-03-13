@@ -242,28 +242,28 @@ export const dashboardSections: Section[] = [
       }
     ]
   },
-  {
-    id: 'medications',
-    title: 'sections.medications.title',
-    icon: 'Pill',
-    color: 'purple',
-    items: [
-      {
-        id: 'current',
-        title: 'sections.medications.current',
-        type: 'current',
-        icon: 'Clock',
-        count: 2
-      },
-      {
-        id: 'previous',
-        title: 'sections.medications.previous',
-        type: 'previous',
-        icon: 'ClockRewind',
-        count: 3
-      }
-    ]
-  },
+  // {
+  //   id: 'medications',
+  //   title: 'sections.medications.title',
+  //   icon: 'Pill',
+  //   color: 'purple',
+  //   items: [
+  //     {
+  //       id: 'current',
+  //       title: 'sections.medications.current',
+  //       type: 'current',
+  //       icon: 'Clock',
+  //       count: 2
+  //     },
+  //     {
+  //       id: 'previous',
+  //       title: 'sections.medications.previous',
+  //       type: 'previous',
+  //       icon: 'ClockRewind',
+  //       count: 3
+  //     }
+  //   ]
+  // },
   {
     id: 'general',
     title: 'sections.general.title',
