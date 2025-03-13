@@ -13,20 +13,20 @@
   "sections": {
     "allergies": {
       "title": "الحساسية",
-      "medicine": "حساسية الأدوية",
-      "food": "حساسية الأطعمة",
-      "material": "حساسية المواد",
+      "medicine": "تحديث حساسية الأدوية",
+      "food": "تحديث حساسية الأطعمة",
+      "material": "تحديث حساسية المواد",
       "doctor": "حساسية مدخلة من الطبيب",
       "noAllergies": "لا توجد حساسية مسجلة"
     },
     "vitals": {
       "title": "المؤشرات الحيوية",
-      "bmi": "مؤشر كتلة الجسم",
-      "bloodPressure": "ضغط الدم",
-      "bloodGlucose": "سكر الدم",
-      "waist": "محيط الخصر",
-      "weight": "الوزن",
-      "height": "الطول",
+      "bmi": "تحديث مؤشر كتلة الجسم",
+      "bloodPressure": "تحديث ضغط الدم",
+      "bloodGlucose": "تحديث سكر الدم",
+      "waist": "تحديث محيط الخصر",
+      "weight": "تحديث الوزن",
+      "height": "تحديث الطول",
       "noVitals": "لا توجد قياسات مسجلة"
     },
     "medications": {
@@ -37,9 +37,9 @@
     },
     "general": {
       "title": "معلومات صحية عامة",
-      "bloodType": "فصيلة الدم",
-      "healthConditions": "الحالات الصحية",
-      "familyHistory": "التاريخ المرضي للعائلة",
+      "bloodType": "تحديث فصيلة الدم",
+      "healthConditions": "تحديث الحالات الصحية",
+      "familyHistory": "تحديث التاريخ المرضي للعائلة",
       "healthCenters": "المركز الصحي المخصص"
     }
   },

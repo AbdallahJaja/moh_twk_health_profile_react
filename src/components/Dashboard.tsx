@@ -253,14 +253,14 @@ const Dashboard: React.FC = () => {
             </p>
 
             {/* Health Record ID */}
-            <div className="mt-2 flex items-center">
+            {/* <div className="mt-2 flex items-center">
               <span className="text-xs text-gray-500 dark:text-gray-400 ml-1 transition-colors">
                 {t("profile.healthRecordId")}:
               </span>
               <span className="text-sm font-medium text-gray-800 dark:text-gray-200 transition-colors">
                 {dashboardData.userProfile.healthRecordId}
               </span>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

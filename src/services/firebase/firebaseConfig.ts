@@ -1,45 +1,61 @@
 // src/services/firebase/firebaseConfig.ts
 import { initializeApp } from 'firebase/app';
-import { getAnalytics, isSupported } from 'firebase/analytics';
+import { getAnalytics, Analytics, isSupported, setUserId, setUserProperties } from 'firebase/analytics';
 import { env } from '../../config/env';
 
-// Your web app's Firebase configuration
-// Replace with your actual Firebase config from the Firebase console
+// Firebase configuration
 const firebaseConfig = {
-  apiKey: env.firebaseConfig.apiKey || "your-api-key",
-  authDomain: env.firebaseConfig.authDomain || "your-auth-domain",
-  projectId: env.firebaseConfig.projectId || "mohtwk-ebf40",
-  storageBucket: env.firebaseConfig.storageBucket || "your-storage-bucket",
+  apiKey: env.firebaseConfig.apiKey,
+  authDomain: env.firebaseConfig.authDomain,
+  projectId: env.firebaseConfig.projectId,
+  storageBucket: env.firebaseConfig.storageBucket,
   messagingSenderId:
-    env.firebaseConfig.messagingSenderId || "your-messaging-sender-id",
-  appId: env.firebaseConfig.appId || "your-app-id",
-  measurementId: env.firebaseConfig.measurementId || "your-measurement-id",
+    env.firebaseConfig.messagingSenderId,
+  appId: env.firebaseConfig.appId,
+  measurementId: env.firebaseConfig.measurementId ,
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Analytics with null as placeholder
-let analytics = null;
+// Create a placeholder for analytics
+let analytics: Analytics | null = null;
 
-// Conditionally initialize analytics
+// Initialize analytics asynchronously
 const initializeAnalytics = async () => {
   try {
-    // Check if analytics is supported in current environment
-    const isAnalyticsSupported = await isSupported();
-    
-    if (isAnalyticsSupported) {
-      analytics = getAnalytics(app);
-      console.log('Firebase Analytics initialized');
+    if (env.ENABLE_ANALYTICS) {
+      const isAnalyticsSupported = await isSupported();
+      
+      if (isAnalyticsSupported) {
+        analytics = getAnalytics(app);
+        console.log('Firebase Analytics initialized successfully');
+      } else {
+        console.log('Firebase Analytics not supported in this environment');
+      }
     } else {
-      console.log('Firebase Analytics not supported in this environment');
+      console.log('Analytics disabled by environment configuration');
     }
   } catch (error) {
     console.error('Error initializing Firebase Analytics:', error);
   }
 };
 
-// Run initialization
+// Set user ID for analytics
+export const setAnalyticsUserId = (userId: string) => {
+  if (analytics && userId) {
+    setUserId(analytics, userId);
+  }
+};
+
+// Set user properties for better segmentation
+export const setAnalyticsUserProperties = (properties: Record<string, string>) => {
+  if (analytics) {
+    setUserProperties(analytics, properties);
+  }
+};
+
+// Initialize analytics
 initializeAnalytics();
 
 export { app, analytics };

@@ -167,14 +167,14 @@ export const dashboardSections: Section[] = [
         title: 'sections.allergies.medicine',
         type: 'medicine',
         icon: 'Pill',
-        count: 2
+        count: 0
       },
       {
         id: 'food',
         title: 'sections.allergies.food',
         type: 'food',
         icon: 'Coffee',
-        count: 2
+        count: 0
       },
       {
         id: 'material',
@@ -182,14 +182,15 @@ export const dashboardSections: Section[] = [
         type: 'material',
         icon: 'Shirt',
         count: 0
-      },
-      {
-        id: 'doctor',
-        title: 'sections.allergies.doctor',
-        type: 'doctor',
-        icon: 'Stethoscope',
-        count: 0
       }
+      // ,
+      // {
+      //   id: 'doctor',
+      //   title: 'sections.allergies.doctor',
+      //   type: 'doctor',
+      //   icon: 'Stethoscope',
+      //   count: 0
+      // }
     ]
   },
   {
@@ -202,43 +203,43 @@ export const dashboardSections: Section[] = [
         id: 'bmi',
         title: 'sections.vitals.bmi',
         type: 'bmi',
-        icon: 'Scale',
-        value: 24.8
+        icon: 'Scale'//,
+        // value: 24.8
       },
       {
         id: 'blood-pressure',
         title: 'sections.vitals.bloodPressure',
         type: 'blood-pressure',
-        icon: 'Heart',
-        value: '120/80'
+        icon: 'Heart'//,
+        // value: '120/80'
       },
       {
         id: 'blood-glucose',
         title: 'sections.vitals.bloodGlucose',
         type: 'blood-glucose',
-        icon: 'Droplet',
-        value: 95
+        icon: 'Droplet'//,
+        // value: 95
       },
       {
         id: 'waist',
         title: 'sections.vitals.waist',
         type: 'waist',
-        icon: 'Ruler',
-        value: 82
+        icon: 'Ruler'//,
+        // value: 82
       },
       {
         id: 'weight',
         title: 'sections.vitals.weight',
         type: 'weight',
-        icon: 'Scale',
-        value: 75
+        icon: 'Scale'//,
+        // value: 75
       },
       {
         id: 'height',
         title: 'sections.vitals.height',
         type: 'height',
-        icon: 'Ruler',
-        value: 174
+        icon: 'Ruler'//,
+        // value: 174
       }
     ]
   },
@@ -274,30 +275,31 @@ export const dashboardSections: Section[] = [
         id: 'blood-type',
         title: 'sections.general.bloodType',
         type: 'blood-type',
-        icon: 'Droplet',
-        value: 'O+'
+        icon: 'Droplet'//,
+        // value: 'O+'
       },
       {
         id: 'health-conditions',
         title: 'sections.general.healthConditions',
         type: 'health-conditions',
-        icon: 'ClipboardList',
-        count: 1
+        icon: 'ClipboardList'//,
+        // count: 1
       },
       {
         id: 'family-history',
         title: 'sections.general.familyHistory',
         type: 'family-history',
-        icon: 'Users',
-        count: 2
-      },
-      {
-        id: 'health-centers',
-        title: 'sections.general.healthCenters',
-        type: 'health-centers',
-        icon: 'Map',
-        count: 1
+        icon: 'Users'//,
+        // count: 2
       }
+      // ,
+      // {
+      //   id: 'health-centers',
+      //   title: 'sections.general.healthCenters',
+      //   type: 'health-centers',
+      //   icon: 'Map',
+      //   count: 1
+      // }
     ]
   }
 ];

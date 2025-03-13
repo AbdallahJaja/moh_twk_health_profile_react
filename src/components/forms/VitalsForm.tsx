@@ -75,8 +75,8 @@ const VitalsForm: React.FC<VitalsFormProps> = ({
 const { trackPageView, trackClick } = useAnalytics(); // Add analytics hook
 
   useEffect(() => {
-    trackPageView("VitalsForms", "/vitlas-forms/{type}"); // Track page view
-  }, [trackPageView]);
+    trackPageView(`Vitals Form - ${type}`, `/vitals/${type}/edit`); // Track page view
+  }, [trackPageView, type]);
   // Initialize vital data from context
   useEffect(() => {
     if (healthData && healthData.vitals && type) {

@@ -13,20 +13,20 @@
   "sections": {
     "allergies": {
       "title": "Allergies",
-      "medicine": "Medicine Allergies",
-      "food": "Food Allergies",
-      "material": "Material Allergies",
+      "medicine": "Update Medicine Allergies",
+      "food": "Update Food Allergies",
+      "material": "Update Material Allergies",
       "doctor": "Doctor-Entered Allergies",
       "noAllergies": "No allergies recorded"
     },
     "vitals": {
       "title": "Vital Signs",
-      "bmi": "Body Mass Index",
-      "bloodPressure": "Blood Pressure",
-      "bloodGlucose": "Blood Glucose",
-      "waist": "Waist Circumference",
-      "weight": "Weight",
-      "height": "Height",
+      "bmi": "Update Body Mass Index",
+      "bloodPressure": "Update Blood Pressure",
+      "bloodGlucose": "Update Blood Glucose",
+      "waist": "Update Waist Circumference",
+      "weight": "Update Weight",
+      "height": "Update Height",
       "noVitals": "No measurements recorded"
     },
     "medications": {
@@ -37,9 +37,9 @@
     },
     "general": {
       "title": "General Health Information",
-      "bloodType": "Blood Type",
-      "healthConditions": "Health Conditions",
-      "familyHistory": "Family Medical History",
+      "bloodType": "Update Blood Type",
+      "healthConditions": "Update Health Conditions",
+      "familyHistory": "Update Family Medical History",
       "healthCenters": "Assigned Health Center"
     }
   },
